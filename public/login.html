@@ -6,16 +6,17 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <header><div class="container"><h2>Rust Panel</h2></div></header>
-  <div class="container">
-    <div class="card">
-      <h3>Login</h3>
-      <input id="u" placeholder="username" />
-      <input id="p" placeholder="password" type="password" style="margin-top:10px;" />
-      <button class="btn" id="btn" style="margin-top:10px;">Login</button>
-      <pre id="msg" style="height:90px;margin-top:10px;"></pre>
-    </div>
+<div class="container">
+  <div class="card">
+    <h2>Login</h2>
+    <label>Username</label>
+    <input id="u" />
+    <label style="margin-top:10px;">Password</label>
+    <input id="p" type="password" />
+    <button class="btn" id="btn" style="margin-top:12px;">Sign in</button>
+    <pre id="out" style="height:120px;margin-top:12px;"></pre>
   </div>
+</div>
 <script src="/login.js"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 node_modules/
-data/
-uploads/
-backups/
 .env
-*.log
+data/
+backups/
+uploads/
 .DS_Store
+*.log

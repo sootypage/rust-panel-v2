@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Rust Panel - Create Server</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div id="nav"></div>
+
+<div class="container">
+  <div class="card">
+    <h3>Create Server</h3>
+
+    <label>Slug</label>
+    <input id="slug" placeholder="main" />
+
+    <label style="margin-top:10px;">Name</label>
+    <input id="name" placeholder="Rust Main" />
+
+    <div class="row" style="margin-top:10px;align-items:center;">
+      <label style="min-width:140px;">Modded (uMod)</label>
+      <input id="modded" type="checkbox" />
+    </div>
+
+    <label style="margin-top:10px;">RAM Limit (MiB) (optional)</label>
+    <input id="memoryMiB" placeholder="e.g. 8192" />
+
+    <label style="margin-top:10px;">Max Players</label>
+    <input id="maxPlayers" value="100" />
+
+    <label style="margin-top:10px;">Server Port</label>
+    <input id="serverPort" value="28015" />
+
+    <label style="margin-top:10px;">RCON Port</label>
+    <input id="rconPort" value="28016" />
+
+    <label style="margin-top:10px;">RCON Password</label>
+    <input id="rconPassword" type="password" placeholder="min 6 chars" />
+
+    <button class="btn" id="createBtn" style="margin-top:12px;">Create + Install</button>
+    <pre id="out" style="height:240px;margin-top:12px;"></pre>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/nav.js"></script>
+<script src="/create.js"></script>
+</body>
+</html>

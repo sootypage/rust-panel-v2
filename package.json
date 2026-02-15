@@ -1,14 +1,25 @@
 {
   "name": "rust-panel-v2",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Custom Rust server panel (users/login/roles, systemd-managed servers, files, backups, plugins, metrics)",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node src/index.js"
+    "start": "node src/index.js"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pidusage": "^4.0.1",
+    "rcon-client": "^4.2.6",
+    "socket.io": "^4.8.1"
   }
 }

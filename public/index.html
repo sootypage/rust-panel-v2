@@ -2,38 +2,20 @@
 <html>
 <head>
   <meta charset="utf-8"/>
-  <title>Rust Panel</title>
+  <title>Rust Panel - Dashboard</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<header><div class="container"><h2>Rust Panel</h2></div></header>
+<div id="nav"></div>
 
 <div class="container">
   <div class="card">
-    <button class="btn" id="logout">Logout</button>
-    <span id="who" style="margin-left:12px;"></span>
+    <div id="who"></div>
   </div>
-
-  <div class="card" id="createCard" style="display:none;">
-    <h3>Create Server</h3>
-    <input id="slug" placeholder="slug (e.g. main, 2x)" />
-    <input id="name" placeholder="name" style="margin-top:10px;" />
-    <input id="baseDir" placeholder="base dir (must start /srv/rust/slug)" style="margin-top:10px;" />
-    <textarea id="cmd" placeholder="start command" style="margin-top:10px;height:140px;"></textarea>
-
-    <div style="margin-top:10px;">
-      <input id="rconHost" placeholder="rcon host (127.0.0.1)" />
-      <input id="rconPort" placeholder="rcon port" style="margin-top:10px;" />
-      <input id="rconPass" placeholder="rcon password" style="margin-top:10px;" />
-    </div>
-
-    <button class="btn" id="createBtn" style="margin-top:10px;">Create</button>
-    <pre id="createMsg" style="height:120px;margin-top:10px;"></pre>
-  </div>
-
   <div id="servers"></div>
 </div>
 
-<script src="/app.js"></script>
+<script src="/nav.js"></script>
+<script src="/dashboard.js"></script>
 </body>
 </html>

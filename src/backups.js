@@ -1,6 +1,7 @@
+// src/backups.js
+const fs = require("fs");
 const path = require("path");
 const { exec } = require("child_process");
-const { getServerBySlug } = require("./servers");
 
 function sh(cmd) {
   return new Promise((resolve, reject) => {
@@ -11,16 +12,13 @@ function sh(cmd) {
   });
 }
 
-async function createBackup(slug) {
-  const s = getServerBySlug(slug);
-  if (!s) throw new Error("Server not found");
-
-  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const out = path.join(process.cwd(), "backups", `${slug}-${stamp}.tar.gz`);
-
-  const cmd = `tar -czf "${out}" -C "${s.base_dir}" . --exclude="./logs"`;
-  await sh(cmd);
-  return { file: path.basename(out), path: out };
+async function createBackup(slug, baseDir) {
+  const backupsDir = path.join(process.cwd(), "backups", slug);
+  fs.mkdirSync(backupsDir, { recursive: true });
+  const name = `${slug}-${Date.now()}.tar.gz`;
+  const out = path.join(backupsDir, name);
+  await sh(`tar -czf "${out}" -C "${baseDir}" .`);
+  return { file: out, name };
 }
 
 module.exports = { createBackup };

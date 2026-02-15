@@ -1,13 +1,14 @@
+// src/metrics.js
 const pidusage = require("pidusage");
-const { getServerBySlug } = require("./servers");
+const { db } = require("./db");
 const { getMainPID } = require("./systemd");
 
 async function getMetrics(slug) {
-  const s = getServerBySlug(slug);
+  const s = db.prepare("SELECT * FROM servers WHERE slug=?").get(slug);
   if (!s) throw new Error("Server not found");
 
   const pid = await getMainPID(s.service_name);
-  if (!pid) return { running: false };
+  if (!pid) return { running: false, pid: null };
 
   const stat = await pidusage(pid);
   return {
