@@ -35,7 +35,7 @@ npm run setup
 cp .env.example .env
 npm install
 npm start
-
+```
 Open: `http://SERVER-IP:3000/login.html`
 
 ## Create first admin user
