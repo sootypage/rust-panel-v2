@@ -1,4 +1,3 @@
-\
 requireLogin();
 document.getElementById("nav").innerHTML = navHTML("settings");
 attachLogout();

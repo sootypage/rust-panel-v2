@@ -1,4 +1,3 @@
-\
 function navHTML(active) {
   const items = [
     ["Dashboard", "/", "dashboard"],

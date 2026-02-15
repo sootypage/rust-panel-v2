@@ -1,4 +1,3 @@
-\
 const out = document.getElementById("out");
 document.getElementById("btn").onclick = async () => {
   out.textContent = "";

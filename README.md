@@ -64,3 +64,15 @@ This build stores the Playit token & endpoint and shows the endpoint in the UI. 
 
 ## HTTPS / Domain
 Use `docs/nginx-example.conf` and add TLS via Certbot/Cloudflare.
+
+
+## Quick install (Ubuntu)
+
+```bash
+sudo ./setup.sh
+cp .env.example .env
+npm install
+node src/index.js
+```
+
+By default the panel binds to **0.0.0.0** (all interfaces) on port **3000**.

@@ -1,10 +1,11 @@
 {
   "name": "rust-panel-v2",
-  "version": "0.6.0",
+  "version": "0.8.0",
   "private": true,
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "setup:ubuntu": "sudo ./setup.sh"
   },
   "engines": {
     "node": ">=20"
