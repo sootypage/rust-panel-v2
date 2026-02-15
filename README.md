@@ -1,73 +1,94 @@
-# 🦀 Rust Panel v2
+# rust-panel-v2
 
-A lightweight self-hosted web panel to manage **Rust dedicated servers** on Linux with:
-- UI login + roles
-- Create servers from the UI (no JSON editing)
-- systemd services per server (start/stop/restart + auto-restart)
-- CPU/RAM stats, player count, IP/port display
-- File Manager (browse/edit/upload)
-- Backups + download
-- Discord webhook stats
+A lightweight self-hosted Rust server panel (Node.js + SQLite) with:
+- Login + roles (`admin`, `owner`, `user`)
+- Create server from UI (no JSON edits)
+- Systemd units per server (24/7 with auto-restart)
+- Live console log + basic CPU/RAM stats
+- File manager (browse/edit/upload)
+- Backups (create + download)
+- Optional uMod install for modded servers
 
-> **Note:** This panel needs **steamcmd** available on the machine that installs Rust servers.
+> **Security note:** This panel uses `sudo` to run `steamcmd` as the `steam` user and to start/stop `rust-*.service` units. Follow the sudoers instructions below carefully.
 
----
+## Requirements
+- Ubuntu 22.04+ (recommended)
+- Node.js 20+
+- A `steam` user
+- `steamcmd` installed at `/usr/games/steamcmd`
 
-
-## ♾ 24/7 servers (auto-restart)
-
-Each server runs as a **systemd service** with `Restart=always`.
-That means:
-- If the Rust process crashes, systemd restarts it
-- On reboot, enabled services start again
-- Servers stay **24/7** as long as you don’t stop them
-
-Manual control examples:
-
+## Install
 ```bash
-sudo systemctl status rust-main
-sudo systemctl restart rust-main
-sudo systemctl stop rust-main
-sudo systemctl start rust-main
+git clone https://github.com/sootypage/rust-panel-v2.git
+cd rust-panel-v2
+cp .env.example .env
+npm install
+node src/index.js
 ```
 
----
+Open the panel:
+- Local: `http://127.0.0.1:8080`
+- Remote: `http://YOUR_SERVER_IP:8080`
 
-## 🛠 Troubleshooting
-
-### Create Server install looks “stuck”
-Check install logs:
-
-```bash
-ls -lah data/install-logs
-tail -n 50 data/install-logs/*.log
+## .env
+Minimum:
+```env
+HOST=0.0.0.0
+PORT=8080
+JWT_SECRET=change_me_to_a_long_random_string
 ```
 
-### Permission errors
-Make sure rust folder is owned by steam:
-
+## Create first admin/owner
+Start the panel once (creates `data/panel.db`), then:
 ```bash
+cd rust-panel-v2
+node - <<'NODE'
+const bcrypt = require("bcrypt");
+const { db } = require("./src/db");
+const username = "admin";
+const password = "CHANGE_ME";
+const role = "owner"; // owner sees ALL servers
+const hash = bcrypt.hashSync(password, 12);
+db.prepare("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES (?,?,?)")
+  .run(username, hash, role);
+console.log("Created:", username);
+NODE
+```
+
+## Roles
+- **owner**: can see/manage **all servers**
+- **admin**: same privileges in this version
+- **user**: can only see servers they created
+
+## Sudo permissions (required)
+Edit with:
+```bash
+sudo visudo
+```
+
+Add (change `minecraftgod2122` if your username is different):
+```sudoers
+# Rust Panel permissions
+minecraftgod2122 ALL=(steam) NOPASSWD: /usr/games/steamcmd, /bin/chmod, /bin/mkdir, /bin/chown
+minecraftgod2122 ALL=(root) NOPASSWD: /usr/bin/systemctl start rust-*.service, /usr/bin/systemctl stop rust-*.service, /usr/bin/systemctl restart rust-*.service, /usr/bin/systemctl daemon-reload, /usr/bin/systemctl enable rust-*.service, /usr/bin/systemctl disable rust-*.service
+```
+
+## Fix /srv/rust permissions (required)
+```bash
+sudo useradd -m -s /bin/bash steam 2>/dev/null || true
+sudo mkdir -p /srv/rust
 sudo chown -R steam:steam /srv/rust
+sudo chmod -R 2775 /srv/rust
 ```
 
-### Can’t access panel from browser
-Open firewall port:
+## Import an existing server
+Use **Dashboard → Import Server** to add an existing Rust install that was created outside the panel.
+It only needs:
+- slug
+- base dir (e.g. `/srv/rust/main`)
+- ports + rcon settings
 
-```bash
-sudo ufw allow 3000/tcp
-```
-
----
-
-
-### Panel permissions test (required for auto-install)
-
-```bash
-sudo -n -u steam /usr/games/steamcmd +quit
-```
-
-Install logs:
-
-```bash
-ls -lah data/install-logs
-```
+## Notes
+- Default `server.level` used: **Procedural Map** (quoted correctly)
+- If you leave RCON password empty, the panel generates one automatically.
+- Install logs are written to: `data/install-logs/*.log`

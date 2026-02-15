@@ -2,6 +2,29 @@ const { db } = require("./db");
 const { createService, startService, stopService, restartService, statusService } = require("./systemd");
 const { installServerBundle } = require("./installer");
 
+
+function buildDefaultStartCmd({ slug, appPort, queryPort, rconHost, rconPort, rconPassword, seed, worldSize, maxPlayers }) {
+  // Keep quotes for 'Procedural Map'
+  return [
+    "./RustDedicated",
+    "-batchmode",
+    "-nographics",
+    "+server.identity", `"${slug}"`,
+    "+server.port", String(appPort),
+    "+server.queryport", String(queryPort),
+    "+server.level", `"Procedural Map"`,
+    "+server.seed", String(seed),
+    "+server.worldsize", String(worldSize),
+    "+rcon.web", "1",
+    "+rcon.ip", String(rconHost),
+    "+rcon.port", String(rconPort),
+    "+rcon.password", `"${rconPassword}"`,
+    "+server.hostname", `"${slug}"`,
+    "+server.description", `"Hosted with Rust Panel"`,
+    "+server.maxplayers", String(maxPlayers),
+  ].join(" ");
+}
+
 function listServers() {
   return db.prepare(
     `SELECT id, slug, name, modded, memory_mib, max_players, server_port, query_port, public_ip, public_port

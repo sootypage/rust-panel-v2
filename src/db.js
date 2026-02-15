@@ -55,3 +55,7 @@ CREATE TABLE IF NOT EXISTS settings (
 `);
 
 module.exports = { db };
+
+
+// Ensure servers table has owner_username
+try { db.prepare("ALTER TABLE servers ADD COLUMN owner_username TEXT").run(); } catch (e) {}

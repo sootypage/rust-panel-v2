@@ -14,3 +14,8 @@ pre { background:#0b1220; border:1px solid #233041; padding:10px; border-radius:
 .small { font-size: 12px; opacity: .75; }
 .kv { display:flex; gap:8px; flex-wrap: wrap; }
 .kv div { padding:6px 10px; border:1px solid #233041; border-radius:10px; background:#0b1220; }
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.muted{opacity:.75}
+.btn.primary{font-weight:700}

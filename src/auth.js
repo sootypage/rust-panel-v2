@@ -36,3 +36,7 @@ function requireRole(...roles) {
 }
 
 module.exports = { loginHandler, authRequired, requireRole };
+
+
+function isPrivileged(user){ return user && (user.role === 'admin' || user.role === 'owner'); }
+module.exports.isPrivileged = isPrivileged;
