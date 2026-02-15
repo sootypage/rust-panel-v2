@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Rust Panel - Server</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header>
+  <div class="container">
+    <a class="btn" href="/">← Back</a>
+    <span id="title" style="margin-left:12px;font-size:18px;font-weight:bold;"></span>
+    <span id="status" class="badge off" style="margin-left:12px;"></span>
+  </div>
+</header>
+
+<div class="container">
+  <div class="row">
+    <button class="btn" id="startBtn">Start</button>
+    <button class="btn" id="stopBtn">Stop</button>
+    <button class="btn" id="restartBtn">Restart</button>
+    <button class="btn" id="backupBtn">Create Backup</button>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:bold;margin-bottom:10px;">Metrics</div>
+    <pre id="metrics" style="height:110px;"></pre>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:bold;margin-bottom:10px;">Live Console Log</div>
+    <pre id="logs" style="height:320px;"></pre>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:bold;margin-bottom:10px;">Plugins (uMod/Oxide)</div>
+    <div class="row">
+      <input type="file" id="pluginFile" />
+      <button class="btn" id="uploadPluginBtn">Upload .cs</button>
+    </div>
+    <pre id="plugins" style="height:180px;margin-top:10px;"></pre>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:bold;margin-bottom:10px;">File Manager (list only)</div>
+    <input id="path" placeholder="path inside server (e.g. server.cfg)" />
+    <button class="btn" id="listBtn" style="margin-top:10px;">List</button>
+    <pre id="files" style="height:200px;margin-top:10px;"></pre>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/server.js"></script>
+</body>
+</html>

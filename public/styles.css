@@ -1,0 +1,15 @@
+body { font-family: Arial, sans-serif; margin: 0; background: #111; color: #eee; }
+header { padding: 16px; background: #1b1b1b; border-bottom: 1px solid #333; }
+.container { padding: 16px; max-width: 1100px; margin: 0 auto; }
+.card { background: #1b1b1b; border: 1px solid #333; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+button { padding: 10px 12px; border: 0; border-radius: 8px; cursor: pointer; }
+.btn { background: #2b2b2b; color: #fff; border: 1px solid #444; }
+.btn:hover { background: #353535; }
+.badge { padding: 4px 8px; border-radius: 999px; font-size: 12px; border: 1px solid #444; }
+.badge.on { background: #123a1b; }
+.badge.off { background: #3a1212; }
+a { color: #8ab4ff; text-decoration: none; }
+pre { background: #0c0c0c; border: 1px solid #333; border-radius: 10px; padding: 12px; overflow: auto; }
+input, textarea { padding: 10px; border-radius: 8px; border: 1px solid #333; background: #0c0c0c; color: #fff; width: 100%; }
+textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }

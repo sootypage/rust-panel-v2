@@ -1,0 +1,14 @@
+{
+  "name": "rust-panel-v2",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Custom Rust server panel (users/login/roles, systemd-managed servers, files, backups, plugins, metrics)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
