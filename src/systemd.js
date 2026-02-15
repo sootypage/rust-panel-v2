@@ -24,7 +24,8 @@ Type=simple
 WorkingDirectory=${baseDir}
 ${memLine}
 ExecStart=/bin/bash -lc '${startCmd.replace(/'/g, `'\\\\''`)}'
-Restart=on-failure
+Restart=always
+RestartSec=5
 RestartSec=5
 User=steam
 Group=steam
