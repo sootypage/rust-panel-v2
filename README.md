@@ -158,3 +158,16 @@ sudo ufw allow 3000/tcp
 ```
 
 ---
+
+
+### Panel permissions test (required for auto-install)
+
+```bash
+sudo -n -u steam /usr/games/steamcmd +quit
+```
+
+Install logs:
+
+```bash
+ls -lah data/install-logs
+```
