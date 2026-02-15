@@ -18,7 +18,7 @@ A simple self-hosted Rust server panel:
 
 ## Quick start
 ```bash
-git clone https://github.com/<YOU>/rust-panel-v2.git
+git clone https://github.com/sootypage/rust-panel-v2.git
 cd rust-panel-v2
 cp .env.example .env
 npm install
