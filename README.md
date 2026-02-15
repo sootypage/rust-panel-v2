@@ -29,6 +29,7 @@ sudo apt install -y steamcmd unzip
 steamcmd is usually at `/usr/games/steamcmd`.
 
 ## Install & run
+```bash
 git clone https://github.com/sootypage/rust-panel-v2.git
 cd rust-panel-v2
 npm run setup
@@ -36,6 +37,7 @@ cp .env.example .env
 npm install
 npm start
 ```
+
 Open: `http://SERVER-IP:3000/login.html`
 
 ## Create first admin user
