@@ -76,3 +76,12 @@ node src/index.js
 ```
 
 By default the panel binds to **0.0.0.0** (all interfaces) on port **3000**.
+
+
+## One-command setup
+
+```bash
+npm run setup
+```
+
+This runs `setup.sh` with sudo and installs Node 20 + steamcmd + creates the steam user.

@@ -58,6 +58,22 @@ mkdir -p /srv/rust
 chown -R steam:steam /srv/rust
 
 echo ""
+
+# --- rust-panel sudoers (optional but makes Create Server work without running panel as root) ---
+PANEL_USER="${SUDO_USER:-}"
+if [[ -n "$PANEL_USER" && "$PANEL_USER" != "root" ]]; then
+  echo "[setup] Configuring sudoers for $PANEL_USER (so panel can run steamcmd + manage rust-* services)..."
+  cat >/etc/sudoers.d/rust-panel <<'EOF'
+# Allow the panel user to manage Rust server services + run steamcmd as steam without password.
+# Security note: this grants limited admin power. Use only on machines you trust.
+%sudo ALL=(ALL) NOPASSWD:/bin/systemctl start rust-*.service,/bin/systemctl stop rust-*.service,/bin/systemctl restart rust-*.service,/bin/systemctl status rust-*.service,/bin/systemctl daemon-reload
+%sudo ALL=(steam) NOPASSWD:/usr/games/steamcmd,/usr/local/bin/steamcmd,/opt/steamcmd/steamcmd.sh
+EOF
+  chmod 440 /etc/sudoers.d/rust-panel
+  echo "[setup] (If your user is not in the sudo group, add it: sudo usermod -aG sudo $PANEL_USER)"
+fi
+
+
 echo "[setup] Done."
 echo "[setup] Next:"
 echo "  1) As your normal user: cp .env.example .env"
