@@ -1,27 +1,26 @@
-// src/servers.js
 const { db } = require("./db");
 const { createService, startService, stopService, restartService, statusService } = require("./systemd");
 const { installRustDedicated, installUMod } = require("./installer");
 
 function listServers() {
   return db.prepare(
-    "SELECT id, slug, name, modded, memory_mib, max_players, server_port, rcon_host, rcon_port, service_name FROM servers ORDER BY id DESC"
+    `SELECT id, slug, name, modded, memory_mib, max_players, server_port, public_ip, public_port,
+            playit_enabled, playit_endpoint, service_name
+     FROM servers ORDER BY id DESC`
   ).all();
 }
 
-function getServerBySlug(slug) {
-  return db.prepare("SELECT * FROM servers WHERE slug = ?").get(slug);
-}
+function getServerBySlug(slug) { return db.prepare("SELECT * FROM servers WHERE slug=?").get(slug); }
 
-function buildStartCmd({ slug, maxPlayers, serverPort, rconHost, rconPort, rconPassword, hostname }) {
-  return [
-    "./RustDedicated",
-    "-batchmode", "-nographics",
+function buildStartCmd({ slug, maxPlayers, serverPort, queryPort, rconHost, rconPort, rconPassword, hostname, worldsize, seed }) {
+  const parts = [
+    "./RustDedicated", "-batchmode", "-nographics",
     `+server.identity "${slug}"`,
     `+server.port ${serverPort}`,
+    queryPort ? `+server.queryport ${queryPort}` : "",
     `+server.level "Procedural Map"`,
-    `+server.seed 12345`,
-    `+server.worldsize 3500`,
+    seed ? `+server.seed ${seed}` : "",
+    `+server.worldsize ${worldsize}`,
     `+server.maxplayers ${maxPlayers}`,
     `+server.hostname "${hostname}"`,
     `+server.description "Hosted with Rust Panel"`,
@@ -29,33 +28,43 @@ function buildStartCmd({ slug, maxPlayers, serverPort, rconHost, rconPort, rconP
     `+rcon.ip ${rconHost}`,
     `+rcon.port ${rconPort}`,
     `+rcon.password "${rconPassword}"`
-  ].join(" ");
+  ];
+  return parts.filter(Boolean).join(" ");
 }
 
-async function createServerWizard({ slug, name, baseDir, modded, memoryMiB, maxPlayers, serverPort, rconHost, rconPort, rconPassword, onLine }) {
+async function createServerWizard(opts) {
+  const {
+    slug, name, baseDir, modded, memoryMiB, maxPlayers,
+    serverPort, rconHost, rconPort, rconPassword,
+    worldsize, seed,
+    publicIp, publicPort,
+    vpsIp, queryPort,
+    playitEnabled, playitEndpoint, playitToken,
+    onLine
+  } = opts;
+
   const serviceName = `rust-${slug}.service`;
-  const startCmd = buildStartCmd({
-    slug,
-    maxPlayers,
-    serverPort,
-    rconHost,
-    rconPort,
-    rconPassword,
-    hostname: name
-  });
+  const startCmd = buildStartCmd({ slug, maxPlayers, serverPort, queryPort, rconHost, rconPort, rconPassword, hostname: name, worldsize, seed });
 
   db.prepare(`
-    INSERT INTO servers (slug, name, base_dir, start_cmd, modded, memory_mib, max_players, server_port, rcon_host, rcon_port, rcon_password, service_name)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO servers (
+      slug, name, base_dir, start_cmd,
+      modded, memory_mib, max_players,
+      server_port, rcon_host, rcon_port, rcon_password,
+      worldsize, seed,
+      public_ip, public_port,
+      use_vps, vps_ip, query_port,
+      playit_enabled, playit_endpoint, playit_token,
+      service_name
+    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
     slug, name, baseDir, startCmd,
-    modded ? 1 : 0,
-    memoryMiB || null,
-    maxPlayers,
-    serverPort,
-    rconHost,
-    rconPort,
-    rconPassword,
+    modded ? 1 : 0, memoryMiB || null, maxPlayers,
+    serverPort, rconHost, rconPort, rconPassword,
+    worldsize, seed || null,
+    publicIp || null, publicPort || null,
+    useVps ? 1 : 0, vpsIp || null, queryPort || null,
+    playitEnabled ? 1 : 0, playitEndpoint || null, playitToken || null,
     serviceName
   );
 

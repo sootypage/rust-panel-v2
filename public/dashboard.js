@@ -1,6 +1,5 @@
-// public/dashboard.js
+\
 requireLogin();
-
 document.getElementById("nav").innerHTML = navHTML("dashboard");
 attachLogout();
 
@@ -22,7 +21,7 @@ async function loadServers() {
         <div>
           <div style="font-size:18px;font-weight:bold;">${s.name}</div>
           <div class="badge ${s.running ? "on":"off"}">${s.running ? "RUNNING":"OFFLINE"}</div>
-          <div style="opacity:.7;margin-top:4px;">slug: ${s.slug} • ${s.modded ? "Modded (uMod)" : "Vanilla"}</div>
+          <div class="small">slug: ${s.slug} • ${s.modded ? "Modded (uMod)" : "Vanilla"} ${s.endpoint ? "• connect: "+s.endpoint : ""}</div>
         </div>
         <div class="row">
           <a class="btn" href="/server.html?slug=${encodeURIComponent(s.slug)}">Open</a>
@@ -35,4 +34,4 @@ async function loadServers() {
 
 loadMe();
 loadServers();
-setInterval(loadServers, 4000);
+setInterval(loadServers, 5000);

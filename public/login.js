@@ -1,4 +1,4 @@
-// public/login.js
+\
 const out = document.getElementById("out");
 document.getElementById("btn").onclick = async () => {
   out.textContent = "";
@@ -11,10 +11,8 @@ document.getElementById("btn").onclick = async () => {
     body: JSON.stringify({ username, password })
   });
   const j = await res.json();
-  if (!j.ok) {
-    out.textContent = j.error || "Login failed";
-    return;
-  }
+  if (!j.ok) return (out.textContent = j.error || "Login failed");
+
   localStorage.setItem("token", j.token);
   localStorage.setItem("role", j.role);
   location.href = "/";

@@ -11,12 +11,27 @@
 <div class="container">
   <div class="card">
     <h3>Account</h3>
-    <pre id="me" style="height:90px;"></pre>
+
+    <div class="row" style="align-items:center;">
+      <img id="avatar" src="" style="width:64px;height:64px;border-radius:14px;border:1px solid #233041;object-fit:cover;">
+      <div style="flex:1;">
+        <pre id="me" style="height:90px;"></pre>
+      </div>
+    </div>
+
+    <h4 style="margin-top:12px;">Change Username</h4>
+    <input id="newUser" placeholder="new username (3-24 chars)" />
+    <button class="btn" id="chgUser" style="margin-top:10px;">Change Username</button>
 
     <h4 style="margin-top:12px;">Change Password</h4>
     <input id="newPass" type="password" placeholder="new password (min 6)" />
-    <button class="btn" id="chg" style="margin-top:10px;">Change</button>
-    <pre id="out" style="height:120px;margin-top:10px;"></pre>
+    <button class="btn" id="chgPass" style="margin-top:10px;">Change Password</button>
+
+    <h4 style="margin-top:12px;">Profile Picture</h4>
+    <input id="avatarFile" type="file" />
+    <button class="btn" id="upAvatar" style="margin-top:10px;">Upload Avatar</button>
+
+    <pre id="out" style="height:160px;margin-top:10px;"></pre>
   </div>
 </div>
 

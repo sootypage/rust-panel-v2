@@ -1,50 +1,24 @@
-# Rust Panel v2 (Custom)
+# Rust Panel v2 (Custom) — v4
 
-A simple self-hosted Rust server panel:
-- Login + roles
-- Dashboard / Create Server / Settings / Account pages
-- Create Server wizard installs RustDedicated automatically (SteamCMD) and optional uMod (Oxide)
-- systemd unit per server + log tailing
-- Basic metrics endpoint (CPU/RAM via pidusage) (graphs can be added)
+Self-hosted Rust server panel with:
+- Users + login + roles
+- Dashboard + Create Server + Server page + Settings + Account + **File Manager**
+- Create Server wizard: installs RustDedicated (SteamCMD), optional uMod, creates **systemd unit per server**
+- CPU/RAM stats per server + player count via RCON
+- File Manager: browse + edit configs + upload plugins (.cs)
+- Discord webhook: periodic server stats posts
+- HTTPS + domain support (Nginx example)
 
-> **Note about WSL2:** RustDedicated can be unstable on WSL2. For best results run on a real Linux VPS/bare metal.
+> Keep this repo **private** if you store secrets (RCON passwords, Playit token, webhook URLs).
 
 ## Requirements
-- Ubuntu 22.04+ (recommended)
+- Ubuntu 22.04+
 - Node.js **20+**
-- `sudo` access
-- `steamcmd` and `unzip` installed
-- A `steam` user (the installer will use it)
+- sudo access
+- steamcmd + unzip
+- a `steam` user
 
-## Quick start
-```bash
-git clone https://github.com/sootypage/rust-panel-v2.git
-cd rust-panel-v2
-cp .env.example .env
-npm install
-node src/index.js
-```
-Open:
-- http://SERVER-IP:3000/login.html
-
-## Create first admin user
-Run from the project folder:
-```bash
-node - <<'NODE'
-const bcrypt = require("bcrypt");
-const { db } = require("./src/db");
-const username = "admin";
-const password = "CHANGE_ME";
-const role = "admin";
-const hash = bcrypt.hashSync(password, 12);
-db.prepare("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES (?,?,?)")
-  .run(username, hash, role);
-console.log("Created admin:", username);
-NODE
-```
-
-## One-time server prep (recommended)
-Create the steam user and base directory:
+## One-time host prep
 ```bash
 sudo useradd -m -s /bin/bash steam || true
 sudo mkdir -p /srv/rust
@@ -52,41 +26,41 @@ sudo chown -R steam:steam /srv/rust
 sudo apt update
 sudo apt install -y steamcmd unzip
 ```
+steamcmd is usually at `/usr/games/steamcmd`.
 
-On Ubuntu, steamcmd is usually at `/usr/games/steamcmd`.
+## Install & run
+```bash
+git clone https://github.com/sootypage/rust-panel-v2.git
+cd rust-panel-v2
+cp .env.example .env
+npm install
+node src/index.js
+```
+Open: `http://SERVER-IP:3000/login.html`
 
-## Create Server wizard
-In **Create Server** page you set:
-- slug (example `main`)
-- name
-- modded (uMod/Oxide) toggle
-- RAM limit (MiB) -> systemd `MemoryMax=`
+## Create first admin user
+```bash
+node - <<'NODE'
+const bcrypt = require("bcrypt");
+const { db } = require("./src/db");
+db.prepare("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES (?,?,?)")
+  .run("admin", bcrypt.hashSync("CHANGE_ME", 12), "admin");
+console.log("Created admin");
+NODE
+```
+
+## Create Server fields
+- slug, name
+- modded (uMod)
+- RAM limit (MiB) → systemd `MemoryMax=`
 - max players
-- server port / rcon port / rcon password
+- map size (worldsize), optional seed
+- server port + rcon port + rcon password
+- public IP + public port (what players connect to)
+- Playit.gg: enable + endpoint + token field (stored in DB)
 
-The panel will:
-1) Install RustDedicated into `/srv/rust/<slug>` with SteamCMD
-2) Optionally install uMod (Oxide) into the same folder
-3) Create a systemd service `rust-<slug>.service` and enable it
+### Playit auto-setup note
+This build stores the Playit token & endpoint and shows the endpoint in the UI. Full automatic tunnel creation is left as a safe/manual step (paste the endpoint you get from Playit).
 
-## Run panel 24/7 (PM2)
-```bash
-sudo npm i -g pm2
-pm2 start src/index.js --name rust-panel
-pm2 save
-pm2 startup
-```
-Run the command PM2 prints.
-
-## Reverse proxy + HTTPS (Nginx)
-See `docs/nginx-example.conf` for a basic config. Put Cloudflare/Nginx in front and keep the panel on 127.0.0.1:3000.
-
-## Updating
-```bash
-git pull
-pm2 restart rust-panel
-```
-
-## Safety
-- Do **not** commit `.env`, `data/`, `backups/` or `uploads/` (already in `.gitignore`)
-- Use a strong `JWT_SECRET`
+## HTTPS / Domain
+Use `docs/nginx-example.conf` and add TLS via Certbot/Cloudflare.

@@ -1,4 +1,3 @@
-// src/files.js
 const fs = require("fs");
 const path = require("path");
 
@@ -10,10 +9,7 @@ function safeJoin(baseDir, rel) {
 
 function listDir(baseDir, rel="") {
   const p = safeJoin(baseDir, rel);
-  const items = fs.readdirSync(p, { withFileTypes: true }).map(d => ({
-    name: d.name,
-    isDir: d.isDirectory()
-  }));
+  const items = fs.readdirSync(p, { withFileTypes: true }).map(d => ({ name: d.name, isDir: d.isDirectory() }));
   return { path: rel, items };
 }
 
@@ -25,7 +21,6 @@ function readFile(baseDir, rel) {
 function writeFile(baseDir, rel, content) {
   const p = safeJoin(baseDir, rel);
   fs.writeFileSync(p, content, "utf8");
-  return true;
 }
 
 module.exports = { listDir, readFile, writeFile };

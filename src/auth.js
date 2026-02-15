@@ -1,4 +1,3 @@
-// src/auth.js
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { db } = require("./db");
@@ -24,12 +23,8 @@ function authRequired(req, res, next) {
   const m = h.match(/^Bearer\s+(.+)$/i);
   if (!m) return res.status(401).json({ ok: false, error: "Missing token" });
 
-  try {
-    req.user = jwt.verify(m[1], SECRET);
-    next();
-  } catch {
-    res.status(401).json({ ok: false, error: "Bad token" });
-  }
+  try { req.user = jwt.verify(m[1], SECRET); next(); }
+  catch { res.status(401).json({ ok: false, error: "Bad token" }); }
 }
 
 function requireRole(...roles) {

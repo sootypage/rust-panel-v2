@@ -1,4 +1,3 @@
-// src/systemd.js
 const { exec } = require("child_process");
 
 function sh(cmd) {
@@ -13,8 +12,8 @@ function sh(cmd) {
 async function createService({ slug, baseDir, startCmd, memoryMiB }) {
   const serviceName = `rust-${slug}.service`;
   const unitPath = `/etc/systemd/system/${serviceName}`;
-
   const memLine = memoryMiB ? `MemoryMax=${memoryMiB}M` : "";
+
   const unit = `
 [Unit]
 Description=Rust Server (${slug})
@@ -50,9 +49,7 @@ WantedBy=multi-user.target
 async function startService(serviceName) { await sh(`sudo systemctl start "${serviceName}"`); }
 async function stopService(serviceName) { await sh(`sudo systemctl stop "${serviceName}"`); }
 async function restartService(serviceName) { await sh(`sudo systemctl restart "${serviceName}"`); }
-async function statusService(serviceName) {
-  try { await sh(`systemctl is-active --quiet "${serviceName}"`); return true; } catch { return false; }
-}
+async function statusService(serviceName) { try { await sh(`systemctl is-active --quiet "${serviceName}"`); return true; } catch { return false; } }
 async function getMainPID(serviceName) {
   try {
     const pid = await sh(`systemctl show -p MainPID --value "${serviceName}"`);

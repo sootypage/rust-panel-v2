@@ -1,4 +1,3 @@
-// src/installer.js
 const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
@@ -17,10 +16,7 @@ function run(cmd, args, { cwd, onLine, env } = {}) {
     p.stderr.on("data", handle);
 
     p.on("error", reject);
-    p.on("close", (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`${cmd} exited with ${code}`));
-    });
+    p.on("close", (code) => code === 0 ? resolve() : reject(new Error(`${cmd} exited with ${code}`)));
   });
 }
 
@@ -31,10 +27,7 @@ function download(url, dest, onLine) {
     onLine?.(`[installer] Downloading: ${url}`);
 
     https.get(url, (res) => {
-      if (res.statusCode !== 200) {
-        reject(new Error(`Download failed: ${res.statusCode}`));
-        return;
-      }
+      if (res.statusCode !== 200) return reject(new Error(`Download failed: ${res.statusCode}`));
       res.pipe(file);
       file.on("finish", () => file.close(resolve));
     }).on("error", (err) => {
@@ -46,9 +39,7 @@ function download(url, dest, onLine) {
 
 async function installRustDedicated({ baseDir, onLine }) {
   const steamcmd = "/usr/games/steamcmd";
-  if (!fs.existsSync(steamcmd)) {
-    throw new Error("steamcmd not found at /usr/games/steamcmd. Install with: sudo apt install steamcmd");
-  }
+  if (!fs.existsSync(steamcmd)) throw new Error("steamcmd not found at /usr/games/steamcmd. Install with: sudo apt install steamcmd");
 
   fs.mkdirSync(baseDir, { recursive: true });
 
@@ -67,10 +58,8 @@ async function installRustDedicated({ baseDir, onLine }) {
 async function installUMod({ baseDir, onLine }) {
   const url = "https://umod.org/games/rust/download";
   const zipPath = path.join(process.cwd(), "uploads", `umod-rust-${Date.now()}.zip`);
-
   await download(url, zipPath, onLine);
   await run("sudo", ["-u", "steam", "unzip", "-o", zipPath, "-d", baseDir], { onLine });
-
   try { fs.unlinkSync(zipPath); } catch {}
 }
 

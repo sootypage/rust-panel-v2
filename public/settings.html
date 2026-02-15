@@ -11,12 +11,14 @@
 <div class="container">
   <div class="card">
     <h3>Settings (Admin)</h3>
-    <label>Setting key</label>
-    <input id="key" placeholder="example" />
-    <label style="margin-top:10px;">Value</label>
-    <input id="val" placeholder="value" />
-    <button class="btn" id="save" style="margin-top:10px;">Save</button>
-    <pre id="out" style="height:180px;margin-top:10px;"></pre>
+
+    <h4>Discord Webhook (per server)</h4>
+    <label>Server slug</label>
+    <input id="whSlug" placeholder="main" />
+    <label style="margin-top:10px;">Webhook URL</label>
+    <input id="whUrl" placeholder="https://discord.com/api/webhooks/..." />
+    <button class="btn" id="saveWh" style="margin-top:10px;">Save Webhook</button>
+    <pre id="whOut" style="height:120px;margin-top:10px;"></pre>
   </div>
 </div>
 

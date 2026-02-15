@@ -19,7 +19,7 @@
     <input id="name" placeholder="Rust Main" />
 
     <div class="row" style="margin-top:10px;align-items:center;">
-      <label style="min-width:140px;">Modded (uMod)</label>
+      <label style="min-width:160px;">Modded (uMod)</label>
       <input id="modded" type="checkbox" />
     </div>
 
@@ -29,17 +29,53 @@
     <label style="margin-top:10px;">Max Players</label>
     <input id="maxPlayers" value="100" />
 
-    <label style="margin-top:10px;">Server Port</label>
+    <label style="margin-top:10px;">Map Size (worldsize)</label>
+    <input id="worldsize" value="3500" />
+
+    <label style="margin-top:10px;">Map Seed (optional)</label>
+    <input id="seed" placeholder="leave blank for random" />
+
+    <label style="margin-top:10px;">Rust App / Game Port</label>
     <input id="serverPort" value="28015" />
 
+    <label style="margin-top:10px;">Query Port</label>
+    <input id="queryPort" value="28016" />
+
     <label style="margin-top:10px;">RCON Port</label>
-    <input id="rconPort" value="28016" />
+    <input id="rconPort" value="28017" />
 
     <label style="margin-top:10px;">RCON Password</label>
     <input id="rconPassword" type="password" placeholder="min 6 chars" />
 
+    <h4 style="margin-top:14px;">Player Connect Info</h4>
+    <label>Public IP (what players connect to)</label>
+    <input id="publicIp" placeholder="example: 123.123.123.123" />
+
+    <label style="margin-top:10px;">Public Port</label>
+    <input id="publicPort" value="28015" />
+
+    <div class="row" style="margin-top:10px;align-items:center;">
+  <label style="min-width:160px;">Use VPS forwarding</label>
+  <input id="useVps" type="checkbox" />
+</div>
+
+<label style="margin-top:10px;">VPS Public IP (only used if checkbox is on)</label>
+    <input id="vpsIp" placeholder="your VPS public IP (used as connect IP)" />
+
+    <h4 style="margin-top:14px;">Playit.gg</h4>
+    <div class="row" style="align-items:center;">
+      <label style="min-width:160px;">Use Playit</label>
+      <input id="playitEnabled" type="checkbox" />
+    </div>
+
+    <label style="margin-top:10px;">Playit Endpoint (optional)</label>
+    <input id="playitEndpoint" placeholder="example: abc.playit.gg:12345" />
+
+    <label style="margin-top:10px;">Playit Token (optional)</label>
+    <input id="playitToken" type="password" placeholder="stored in DB (keep repo private)" />
+
     <button class="btn" id="createBtn" style="margin-top:12px;">Create + Install</button>
-    <pre id="out" style="height:240px;margin-top:12px;"></pre>
+    <pre id="out" style="height:260px;margin-top:12px;"></pre>
   </div>
 </div>
 
