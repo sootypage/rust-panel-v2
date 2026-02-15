@@ -34,14 +34,9 @@ document.getElementById("createBtn").onclick = async () => {
   const rconPort = Number(document.getElementById("rconPort").value.trim() || 28016);
   const rconPassword = document.getElementById("rconPassword").value.trim();
 
-  const useVps = document.getElementById("useVps")?.checked || false;
-  const vpsIp = (document.getElementById("vpsIp")?.value || "").trim() || null;
   const publicIp = document.getElementById("publicIp").value.trim() || null;
   const publicPort = Number(document.getElementById("publicPort").value.trim() || serverPort);
 
-  const playitEnabled = document.getElementById("playitEnabled").checked;
-  const playitEndpoint = document.getElementById("playitEndpoint").value.trim() || null;
-  const playitToken = document.getElementById("playitToken").value.trim() || null;
 
   const j = await api("/api/servers", {
     method: "POST",
@@ -51,10 +46,7 @@ document.getElementById("createBtn").onclick = async () => {
       memoryMiB, maxPlayers,
       worldsize, seed,
       serverPort, rconPort, rconPassword,
-      publicIp, publicPort,
-      useVps, vpsIp, queryPort,
-      playitEnabled, playitEndpoint, playitToken
-    })
+      publicIp, publicPort})
   });
 
   if (!j.ok) {

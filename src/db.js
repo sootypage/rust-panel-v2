@@ -41,13 +41,8 @@ CREATE TABLE IF NOT EXISTS servers (
   public_ip TEXT,
   public_port INTEGER,
 
-  use_vps INTEGER NOT NULL DEFAULT 0,
-  vps_ip TEXT,
   query_port INTEGER,
 
-  playit_enabled INTEGER NOT NULL DEFAULT 0,
-  playit_endpoint TEXT,
-  playit_token TEXT,
 
   service_name TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))

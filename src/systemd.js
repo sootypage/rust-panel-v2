@@ -26,7 +26,6 @@ ${memLine}
 ExecStart=/bin/bash -lc '${startCmd.replace(/'/g, `'\\\\''`)}'
 Restart=always
 RestartSec=5
-RestartSec=5
 User=steam
 Group=steam
 LimitNOFILE=100000

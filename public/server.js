@@ -29,8 +29,6 @@ async function refresh() {
 
   const s = info.server || {};
   const endpoint =
-    (s.playit_enabled && s.playit_endpoint) ? s.playit_endpoint :
-    (s.use_vps && s.vps_ip && s.public_port) ? `${s.vps_ip}:${s.public_port}` :
     (s.public_ip && s.public_port) ? `${s.public_ip}:${s.public_port}` :
     `127.0.0.1:${s.server_port || 28015}`;
 
