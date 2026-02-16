@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="stylesheet" href="/ui.css"/><title>sootypage game panel</title></head><body><div class="layout">
+<div class="sidebar"><div class="brand">sootypage game panel</div>
+<div class="small" id="me">Not logged in</div>
+<div class="nav" style="margin-top:14px">
+  <a href="/dashboard.html" data-id="dash">Dashboard</a>
+  <a href="/create.html" data-id="create">Create Server</a>
+  <a href="/users.html" data-id="users">Users</a>
+  <a href="/settings.html" data-id="settings">Settings</a>
+  <a href="#" id="logout">Logout</a>
+</div></div>
+<div class="main">
+<div class="top">
+  <div>
+    <h1 style="margin:0">Settings</h1>
+    <div class="small">Panel basics (more later).</div>
+  </div>
+</div>
+<div class="card" style="max-width:920px">
+  <h3 style="margin-top:0">Binding</h3>
+  <div class="small">This panel binds to <b>HOST</b> and <b>PORT</b> from your <code>.env</code>.</div>
+  <pre class="log">HOST=0.0.0.0
+PORT=8080</pre>
+  <h3>Next upgrades</h3>
+  <ul class="small">
+    <li>File manager tab</li>
+    <li>Auto backups + download</li>
+    <li>uMod install + plugin manager</li>
+    <li>Multi-game support (Minecraft, etc.)</li>
+  </ul>
+</div>
+<script>
+navActive("settings");
+(async()=>{ await requireMe(); })();
+</script>
+</div></div><script src="/app.js"></script>
+<script>document.getElementById("logout").onclick=()=>{clearToken();location.href="/login.html";};</script></body></html>

@@ -1,0 +1,115 @@
+<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="stylesheet" href="/ui.css"/><title>sootypage game panel</title></head><body><div class="layout">
+<div class="sidebar"><div class="brand">sootypage game panel</div>
+<div class="small" id="me">Not logged in</div>
+<div class="nav" style="margin-top:14px">
+  <a href="/dashboard.html" data-id="dash">Dashboard</a>
+  <a href="/create.html" data-id="create">Create Server</a>
+  <a href="/users.html" data-id="users">Users</a>
+  <a href="/settings.html" data-id="settings">Settings</a>
+  <a href="#" id="logout">Logout</a>
+</div></div>
+<div class="main">
+<div class="top">
+  <div>
+    <h1 style="margin:0" id="title">Server</h1>
+    <div class="small" id="meta"></div>
+  </div>
+  <div class="row">
+    <button class="btn secondary" id="startBtn">Start</button>
+    <button class="btn secondary" id="restartBtn">Restart</button>
+    <button class="btn danger" id="stopBtn">Stop</button>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card" style="flex:1;min-width:320px">
+    <h3 style="margin-top:0">Live Stats</h3>
+    <div class="kpi" id="kpi"></div>
+    <canvas id="chart" width="700" height="160" style="width:100%;margin-top:10px;background:#060b14;border:1px solid var(--border);border-radius:14px"></canvas>
+  </div>
+  <div class="card" style="flex:1;min-width:320px">
+    <h3 style="margin-top:0">RCON Console</h3>
+    <div class="row">
+      <input id="cmd" placeholder="status, players, say hello..."/>
+      <button class="btn" id="sendBtn">Send</button>
+    </div>
+    <pre id="rconOut" class="log"></pre>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h3 style="margin-top:0">Live Logs</h3>
+  <pre id="log" class="log"></pre>
+</div>
+
+<script>
+navActive("dash");
+
+let points=[];
+function draw(){
+  const c=document.getElementById("chart");
+  const ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  const max=100, pad=10;
+  ctx.beginPath(); ctx.moveTo(pad,c.height-pad); ctx.lineTo(c.width-pad,c.height-pad); ctx.strokeStyle="rgba(255,255,255,.2)"; ctx.stroke();
+  if(points.length<2) return;
+  const xs = (i)=> pad + (i*(c.width-2*pad)/(points.length-1));
+  const ys = (v)=> (c.height-pad) - (v*(c.height-2*pad)/max);
+  ctx.beginPath();
+  points.forEach((p,i)=>{ const x=xs(i), y=ys(p.cpu); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);});
+  ctx.strokeStyle="rgba(78,161,255,.9)"; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath();
+  points.forEach((p,i)=>{ const x=xs(i), y=ys(Math.min(100,p.ramGB*10)); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);});
+  ctx.strokeStyle="rgba(67,209,139,.9)"; ctx.lineWidth=2; ctx.stroke();
+}
+
+(async()=>{
+  await requireMe();
+  const slug=qs("slug");
+  const s = await api(`/servers/${encodeURIComponent(slug)}`);
+  title.textContent = s.server.name;
+  meta.textContent = `slug: ${s.server.slug} • ports: ${s.server.server_port}/${s.server.query_port} • rcon: ${s.server.rcon_host}:${s.server.rcon_port}`;
+
+  async function post(action){
+    await api(`/servers/${encodeURIComponent(slug)}/${action}`, {method:"POST", body:"{}"});
+  }
+  startBtn.onclick=()=>post("start").catch(e=>alert(e.message));
+  stopBtn.onclick=()=>post("stop").catch(e=>alert(e.message));
+  restartBtn.onclick=()=>post("restart").catch(e=>alert(e.message));
+
+  setInterval(async()=>{
+    try{
+      const m = await api(`/servers/${encodeURIComponent(slug)}/metrics`);
+      const ramGB = (m.memoryBytes/1024/1024/1024);
+      kpi.innerHTML = `
+        <div class="pill">${m.running?"🟢 Running":"⚪ Stopped"}</div>
+        <div class="pill">CPU: ${m.cpu.toFixed(1)}%</div>
+        <div class="pill">RAM: ${ramGB.toFixed(2)} GB</div>
+        <div class="pill">PID: ${m.pid}</div>`;
+      points.push({t:Date.now(), cpu:m.cpu, ramGB});
+      if(points.length>60) points.shift();
+      draw();
+    }catch{}
+  }, 2000);
+
+  const es = new EventSource(`/api/servers/${encodeURIComponent(slug)}/logs`);
+  es.onmessage = (ev)=>{
+    log.textContent += ev.data + "\n";
+    log.scrollTop = log.scrollHeight;
+    if(log.textContent.length>200000) log.textContent = log.textContent.slice(-120000);
+  };
+
+  sendBtn.onclick=async()=>{
+    rconOut.textContent="Working...";
+    try{
+      const r = await api(`/servers/${encodeURIComponent(slug)}/rcon`, {method:"POST", body:JSON.stringify({command:cmd.value})});
+      rconOut.textContent = r.output || "(no output)";
+    }catch(e){
+      rconOut.textContent="❌ "+e.message;
+    }
+  };
+})();
+</script>
+</div></div><script src="/app.js"></script>
+<script>document.getElementById("logout").onclick=()=>{clearToken();location.href="/login.html";};</script></body></html>

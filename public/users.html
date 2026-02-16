@@ -1,0 +1,79 @@
+<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="stylesheet" href="/ui.css"/><title>sootypage game panel</title></head><body><div class="layout">
+<div class="sidebar"><div class="brand">sootypage game panel</div>
+<div class="small" id="me">Not logged in</div>
+<div class="nav" style="margin-top:14px">
+  <a href="/dashboard.html" data-id="dash">Dashboard</a>
+  <a href="/create.html" data-id="create">Create Server</a>
+  <a href="/users.html" data-id="users">Users</a>
+  <a href="/settings.html" data-id="settings">Settings</a>
+  <a href="#" id="logout">Logout</a>
+</div></div>
+<div class="main">
+<div class="top">
+  <div>
+    <h1 style="margin:0">Users</h1>
+    <div class="small">Owner/Admin can create and manage users.</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card" style="flex:1;min-width:320px">
+    <h3 style="margin-top:0">Create user</h3>
+    <label class="small">Username</label>
+    <input id="u" placeholder="username (2-32 chars)"/>
+    <label class="small" style="margin-top:8px">Password</label>
+    <input id="p" type="password" placeholder="password"/>
+    <label class="small" style="margin-top:8px">Role</label>
+    <select id="role">
+      <option value="user">user</option>
+      <option value="admin">admin</option>
+      <option value="owner">owner</option>
+    </select>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="createBtn">Create</button>
+    </div>
+    <pre id="out" class="log" style="margin-top:10px"></pre>
+  </div>
+
+  <div class="card" style="flex:1;min-width:320px">
+    <h3 style="margin-top:0">Existing users</h3>
+    <div id="list" class="small">Loading...</div>
+  </div>
+</div>
+
+</div></div><script src="/app.js"></script>
+<script>
+document.getElementById("logout").onclick=()=>{clearToken();location.href="/login.html";};
+navActive("users");
+
+async function refresh(){
+  const r = await api("/users");
+  const list = document.getElementById("list");
+  list.innerHTML = '<div class="card" style="background:transparent;border:0;padding:0">' +
+    r.users.map(x=>`
+      <div class="row" style="justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0">
+        <div><b>${x.username}</b> <span class="small">(${x.role})</span></div>
+        <div class="small">id: ${x.id}</div>
+      </div>
+    `).join("") + '</div>';
+}
+
+(async()=>{
+  await requireMe();
+  await refresh();
+})();
+
+createBtn.onclick = async()=>{
+  out.textContent="Working...";
+  try{
+    await api("/users",{method:"POST", body: JSON.stringify({username:u.value, password:p.value, role:role.value})});
+    out.textContent="✅ User created";
+    u.value=""; p.value="";
+    await refresh();
+  }catch(e){
+    out.textContent="❌ "+e.message;
+  }
+};
+</script>
+</body></html>

@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="stylesheet" href="/ui.css"/><title>Login</title></head><body>
+<div class="main" style="max-width:920px;margin:0 auto;padding:28px">
+  <div class="card">
+    <div class="top"><h2 style="margin:0">Login</h2><div class="small">First time? Bootstrap creates the first <b>owner</b>.</div></div>
+    <div class="row">
+      <div style="flex:1" class="card">
+        <h3 style="margin-top:0">Sign in</h3>
+        <input id="u" placeholder="username"/>
+        <input id="p" type="password" placeholder="password"/>
+        <button class="btn" id="btn">Login</button>
+      </div>
+      <div style="flex:1" class="card">
+        <h3 style="margin-top:0">Bootstrap owner (once)</h3>
+        <input id="bu" placeholder="owner username"/>
+        <input id="bp" type="password" placeholder="owner password"/>
+        <button class="btn secondary" id="bbtn">Create owner</button>
+      </div>
+    </div>
+    <pre id="out" class="log" style="margin-top:12px"></pre>
+  </div>
+</div>
+<script src="/app.js"></script>
+<script>
+btn.onclick=async()=>{out.textContent="";try{const r=await api("/auth/login",{method:"POST",body:JSON.stringify({username:u.value,password:p.value})});setToken(r.token);location.href="/dashboard.html";}catch(e){out.textContent="❌ "+e.message;}};
+bbtn.onclick=async()=>{out.textContent="";try{await api("/auth/bootstrap",{method:"POST",body:JSON.stringify({username:bu.value,password:bp.value})});out.textContent="✅ Owner created. Now login."; }catch(e){out.textContent="❌ "+e.message;}};
+</script>
+</body></html>

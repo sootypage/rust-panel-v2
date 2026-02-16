@@ -1,0 +1,98 @@
+<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="stylesheet" href="/ui.css"/><title>sootypage game panel</title></head><body><div class="layout">
+<div class="sidebar"><div class="brand">sootypage game panel</div>
+<div class="small" id="me">Not logged in</div>
+<div class="nav" style="margin-top:14px">
+  <a href="/dashboard.html" data-id="dash">Dashboard</a>
+  <a href="/create.html" data-id="create">Create Server</a>
+  <a href="/users.html" data-id="users">Users</a>
+  <a href="/settings.html" data-id="settings">Settings</a>
+  <a href="#" id="logout">Logout</a>
+</div></div>
+<div class="main">
+<div class="top">
+  <div>
+    <h1 style="margin:0">Create Server</h1>
+    <div class="small">Creates + installs RustDedicated and a systemd service.</div>
+  </div>
+</div>
+
+<div class="card" style="max-width:920px">
+  <div class="row">
+    <div style="flex:1">
+      <label class="small">Slug</label>
+      <input id="slug" placeholder="main, 2x, etc"/>
+    </div>
+    <div style="flex:2">
+      <label class="small">Name</label>
+      <input id="name" placeholder="My Rust Server"/>
+    </div>
+  </div>
+
+  <div class="row">
+    <div style="flex:1">
+      <label class="small">Game Port</label><input id="server_port" value="28015"/>
+    </div>
+    <div style="flex:1">
+      <label class="small">Query Port</label><input id="query_port" value="28017"/>
+    </div>
+    <div style="flex:1">
+      <label class="small">Max Players</label><input id="maxplayers" value="50"/>
+    </div>
+  </div>
+
+  <div class="row">
+    <div style="flex:1">
+      <label class="small">RCON Host</label><input id="rcon_host" value="127.0.0.1"/>
+    </div>
+    <div style="flex:1">
+      <label class="small">RCON Port</label><input id="rcon_port" value="28016"/>
+    </div>
+    <div style="flex:2">
+      <label class="small">RCON Password</label><input id="rcon_password" placeholder="choose a password"/>
+    </div>
+  </div>
+
+  <div class="row">
+    <div style="flex:1">
+      <label class="small">World Size</label><input id="worldsize" value="3500"/>
+    </div>
+    <div style="flex:1">
+      <label class="small">Seed</label><input id="seed" value="0"/>
+    </div>
+    <div style="flex:2">
+      <label class="small">Level</label><input id="level" value="Procedural Map"/>
+    </div>
+  </div>
+
+  <label class="small"><input type="checkbox" id="modded"/> Modded (placeholder)</label>
+  <div class="row" style="margin-top:10px">
+    <button class="btn" id="go">Create + Install</button>
+    <a class="btn secondary" href="/dashboard.html">Back</a>
+  </div>
+  <pre id="out" class="log" style="margin-top:12px"></pre>
+</div>
+
+<script>
+navActive("create");
+(async()=>{ await requireMe(); })();
+
+go.onclick=async()=>{
+  out.textContent="Working... steamcmd download can take a while.";
+  try{
+    await api("/servers",{method:"POST",body:JSON.stringify({
+      slug:slug.value.trim(), name:name.value.trim()||slug.value.trim(),
+      server_port:+server_port.value, query_port:+query_port.value,
+      rcon_host:rcon_host.value.trim(), rcon_port:+rcon_port.value,
+      rcon_password:rcon_password.value, maxplayers:+maxplayers.value,
+      worldsize:+worldsize.value, seed:+seed.value, level:level.value.trim(),
+      modded:modded.checked
+    })});
+    out.textContent="✅ Created + installed. Go to Dashboard and open it.";
+  }catch(e){
+    out.textContent="❌ "+e.message;
+  }
+};
+</script>
+</div></div><script src="/app.js"></script>
+<script>document.getElementById("logout").onclick=()=>{clearToken();location.href="/login.html";};</script></body></html>
