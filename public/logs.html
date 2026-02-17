@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Install Logs • Sootypage Game Panel</title>
+  <link rel="stylesheet" href="/ui.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">Sootypage Game Panel</div>
+    <div class="nav">
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/create.html">Create Server</a>
+      <a class="active" href="/logs.html">Install Logs</a>
+      <a href="/filemanager.html">File Manager</a>
+      <a href="/users.html">Users</a>
+      <a href="#" id="logout">Logout</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>Live Install Log Viewer</h2>
+      <p class="muted">Paste an install stream id (example: <code>main-1771230897074</code>) or open this page from Create Server.</p>
+
+      <div class="grid2">
+        <div>
+          <label>Install Stream ID</label>
+          <input id="streamId" placeholder="main-123..." />
+        </div>
+        <div style="display:flex; gap:10px; align-items:flex-end;">
+          <button class="btn" id="connectBtn">Connect</button>
+          <button class="btn secondary" id="downloadBtn" disabled>Download .log</button>
+        </div>
+      </div>
+
+      <div class="progress" style="margin-top:14px;">
+        <div class="progressBar" id="bar" style="width:0%"></div>
+      </div>
+      <div class="muted" id="pct" style="margin-top:8px;">Not connected.</div>
+
+      <textarea id="console" class="console" readonly style="margin-top:12px; height: 380px;"></textarea>
+    </div>
+  </div>
+
+  <script src="/logs.js"></script>
+</body>
+</html>

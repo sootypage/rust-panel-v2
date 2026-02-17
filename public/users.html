@@ -1,79 +1,93 @@
-<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<link rel="stylesheet" href="/ui.css"/><title>sootypage game panel</title></head><body><div class="layout">
-<div class="sidebar"><div class="brand">sootypage game panel</div>
-<div class="small" id="me">Not logged in</div>
-<div class="nav" style="margin-top:14px">
-  <a href="/dashboard.html" data-id="dash">Dashboard</a>
-  <a href="/create.html" data-id="create">Create Server</a>
-  <a href="/users.html" data-id="users">Users</a>
-  <a href="/settings.html" data-id="settings">Settings</a>
-  <a href="#" id="logout">Logout</a>
-</div></div>
-<div class="main">
-<div class="top">
-  <div>
-    <h1 style="margin:0">Users</h1>
-    <div class="small">Owner/Admin can create and manage users.</div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="card" style="flex:1;min-width:320px">
-    <h3 style="margin-top:0">Create user</h3>
-    <label class="small">Username</label>
-    <input id="u" placeholder="username (2-32 chars)"/>
-    <label class="small" style="margin-top:8px">Password</label>
-    <input id="p" type="password" placeholder="password"/>
-    <label class="small" style="margin-top:8px">Role</label>
-    <select id="role">
-      <option value="user">user</option>
-      <option value="admin">admin</option>
-      <option value="owner">owner</option>
-    </select>
-    <div class="row" style="margin-top:10px">
-      <button class="btn" id="createBtn">Create</button>
-    </div>
-    <pre id="out" class="log" style="margin-top:10px"></pre>
-  </div>
-
-  <div class="card" style="flex:1;min-width:320px">
-    <h3 style="margin-top:0">Existing users</h3>
-    <div id="list" class="small">Loading...</div>
-  </div>
-</div>
-
-</div></div><script src="/app.js"></script>
-<script>
-document.getElementById("logout").onclick=()=>{clearToken();location.href="/login.html";};
-navActive("users");
-
-async function refresh(){
-  const r = await api("/users");
-  const list = document.getElementById("list");
-  list.innerHTML = '<div class="card" style="background:transparent;border:0;padding:0">' +
-    r.users.map(x=>`
-      <div class="row" style="justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0">
-        <div><b>${x.username}</b> <span class="small">(${x.role})</span></div>
-        <div class="small">id: ${x.id}</div>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sootypage Game Panel - Users</title>
+  <link rel="stylesheet" href="/ui.css">
+</head>
+<body>
+<div class="container">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">SG</div>
+      <div>
+        <div class="name">sootypage game panel</div>
+        <div class="sub" id="meSub">Loading…</div>
       </div>
-    `).join("") + '</div>';
-}
+    </div>
 
-(async()=>{
-  await requireMe();
-  await refresh();
-})();
+    <div class="nav">
+      <a href="/dashboard.html">Servers</a>
+      <a href="/create.html">Create Server</a>
+      <a href="/filemanager.html">File Manager</a>
+      <a class="active" href="/users.html">Users</a>
+      <a href="/settings.html">Settings</a>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
+  </aside>
 
-createBtn.onclick = async()=>{
-  out.textContent="Working...";
-  try{
-    await api("/users",{method:"POST", body: JSON.stringify({username:u.value, password:p.value, role:role.value})});
-    out.textContent="✅ User created";
-    u.value=""; p.value="";
-    await refresh();
-  }catch(e){
-    out.textContent="❌ "+e.message;
-  }
-};
-</script>
-</body></html>
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="h1">Users</div>
+        <div class="small">Owners and admins can create more users.</div>
+      </div>
+      <button class="btn secondary" id="refreshBtn">Refresh</button>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <div class="head">
+          <div class="kv">
+            <div class="k">Create user</div>
+            <div class="v">Add a new login</div>
+          </div>
+        </div>
+        <div class="body">
+          <form id="userForm">
+            <div class="form-grid">
+              <div class="col-6">
+                <div class="small">Username</div>
+                <input class="input" id="nu" placeholder="username" autocomplete="off" required>
+              </div>
+              <div class="col-6">
+                <div class="small">Password</div>
+                <input class="input" id="np" type="password" placeholder="password" required>
+              </div>
+              <div class="col-12">
+                <div class="small">Role</div>
+                <select class="input" id="nr">
+                  <option value="user">user</option>
+                  <option value="admin">admin</option>
+                  <option value="owner">owner</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <button class="btn" type="submit">Create</button>
+                <span class="small" id="out" style="margin-left:10px;"></span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="kv">
+            <div class="k">Existing users</div>
+            <div class="v" id="count">0</div>
+          </div>
+        </div>
+        <div class="body">
+          <div id="users" class="grid"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/app.js"></script>
+<script src="/users.js"></script>
+</body>
+</html>

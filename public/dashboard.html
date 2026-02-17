@@ -1,67 +1,61 @@
-<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<link rel="stylesheet" href="/ui.css"/><title>sootypage game panel</title></head><body><div class="layout">
-<div class="sidebar"><div class="brand">sootypage game panel</div>
-<div class="small" id="me">Not logged in</div>
-<div class="nav" style="margin-top:14px">
-  <a href="/dashboard.html" data-id="dash">Dashboard</a>
-  <a href="/create.html" data-id="create">Create Server</a>
-  <a href="/users.html" data-id="users">Users</a>
-  <a href="/settings.html" data-id="settings">Settings</a>
-  <a href="#" id="logout">Logout</a>
-</div></div>
-<div class="main">
-<div class="top">
-  <div>
-    <h1 style="margin:0">Dashboard</h1>
-    <div class="small">Rust servers you can access.</div>
-  </div>
-  <div class="row">
-    <a class="btn secondary" href="/create.html">+ Create</a>
-  </div>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sootypage Game Panel - Dashboard</title>
+  <link rel="stylesheet" href="/ui.css">
+</head>
+<body>
+<div class="container">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">SG</div>
+      <div>
+        <div class="name">sootypage game panel</div>
+        <div class="sub" id="meSub">Loading…</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a class="active" href="/dashboard.html">Servers</a>
+      <a href="/create.html">Create Server</a>
+      <a href="/filemanager.html">File Manager</a>
+      <a href="/users.html">Users</a>
+      <a href="/settings.html">Settings</a>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="h1">Servers</div>
+        <div class="small">Click a server to open console, status, logs, and settings.</div>
+      </div>
+      <div class="row">
+        <button class="btn secondary" id="refreshBtn">Refresh</button>
+        <a class="btn" href="/create.html" style="text-decoration:none;">Create Server</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head">
+        <div class="kv">
+          <div class="k">Showing</div>
+          <div class="v" id="count">0 servers</div>
+        </div>
+        <div class="pill" id="panelAddr">Panel: —</div>
+      </div>
+      <div class="body">
+        <div id="servers" class="grid"></div>
+        <div id="empty" class="small" style="display:none;">No servers yet. Create one.</div>
+      </div>
+    </div>
+  </main>
 </div>
 
-<div id="grid" class="grid"></div>
-
-<script>
-navActive("dash");
-(async()=>{
-  await requireMe();
-  const g = document.getElementById("grid");
-  g.innerHTML = "<div class='card'>Loading...</div>";
-  try{
-    const r = await api("/servers");
-    if(!r.servers.length){ g.innerHTML = "<div class='card'>No servers yet. Create one.</div>"; return; }
-    g.innerHTML = r.servers.map(s=>`
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
-          <div>
-            <div style="font-weight:800">${s.name}</div>
-            <div class="small">slug: ${s.slug} • ${s.server_port}/${s.query_port}</div>
-          </div>
-          <a class="btn secondary" href="/server.html?slug=${encodeURIComponent(s.slug)}">Open</a>
-        </div>
-        <div class="kpi" style="margin-top:10px" id="kpi-${s.slug}">
-          <div class="pill">CPU: …</div>
-          <div class="pill">RAM: …</div>
-        </div>
-      </div>`).join("");
-    for (const s of r.servers){
-      setInterval(async()=>{
-        try{
-          const m = await api(`/servers/${encodeURIComponent(s.slug)}/metrics`);
-          const el = document.getElementById(`kpi-${s.slug}`);
-          const ramGB = (m.memoryBytes/1024/1024/1024).toFixed(2);
-          el.innerHTML = `
-            <div class="pill">${m.running?"🟢 Running":"⚪ Stopped"}</div>
-            <div class="pill">CPU: ${m.cpu.toFixed(1)}%</div>
-            <div class="pill">RAM: ${ramGB} GB</div>`;
-        }catch{}
-      }, 2500);
-    }
-  }catch(e){
-    g.innerHTML = "<div class='card'>❌ "+e.message+"</div>";
-  }
-})();
-</script>
-</div></div><script src="/app.js"></script>
-<script>document.getElementById("logout").onclick=()=>{clearToken();location.href="/login.html";};</script></body></html>
+<script src="/app.js"></script>
+<script src="/dashboard.js"></script>
+</body>
+</html>

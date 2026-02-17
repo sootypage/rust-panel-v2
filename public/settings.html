@@ -1,37 +1,101 @@
-<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<link rel="stylesheet" href="/ui.css"/><title>sootypage game panel</title></head><body><div class="layout">
-<div class="sidebar"><div class="brand">sootypage game panel</div>
-<div class="small" id="me">Not logged in</div>
-<div class="nav" style="margin-top:14px">
-  <a href="/dashboard.html" data-id="dash">Dashboard</a>
-  <a href="/create.html" data-id="create">Create Server</a>
-  <a href="/users.html" data-id="users">Users</a>
-  <a href="/settings.html" data-id="settings">Settings</a>
-  <a href="#" id="logout">Logout</a>
-</div></div>
-<div class="main">
-<div class="top">
-  <div>
-    <h1 style="margin:0">Settings</h1>
-    <div class="small">Panel basics (more later).</div>
-  </div>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sootypage Game Panel - Settings</title>
+  <link rel="stylesheet" href="/ui.css">
+</head>
+<body>
+<div class="container">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">SG</div>
+      <div>
+        <div class="name">sootypage game panel</div>
+        <div class="sub" id="meSub">Loading…</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="/dashboard.html">Servers</a>
+      <a href="/create.html">Create Server</a>
+      <a href="/filemanager.html">File Manager</a>
+      <a href="/users.html">Users</a>
+      <a class="active" href="/settings.html">Settings</a>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="h1">Settings</div>
+        <div class="small">Basic panel info and quick help.</div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <div class="head">
+          <div class="kv">
+            <div class="k">Panel</div>
+            <div class="v">Connection</div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="row" style="justify-content:space-between;">
+            <div class="kv">
+              <div class="k">URL</div>
+              <div class="v" id="url">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Health</div>
+              <div class="v" id="health">—</div>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div class="small">
+            ⚠️ This panel is HTTP by default. If you try HTTPS you’ll get <b>ERR_SSL_PROTOCOL_ERROR</b>.
+            Use <b>http://</b> unless you set up a reverse proxy + SSL.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="head">
+          <div class="kv">
+            <div class="k">Change port</div>
+            <div class="v">Example: 2323</div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="small">1) Edit <b>.env</b> and set:</div>
+          <pre class="console" style="height:auto;">PORT=2323</pre>
+          <div class="small">2) Restart the panel (systemd or node). If you run it manually:</div>
+          <pre class="console" style="height:auto;">cd ~/sootypage-game-panel
+node src/index.js</pre>
+          <div class="small">If you made a systemd service for the panel, restart it:</div>
+          <pre class="console" style="height:auto;">sudo systemctl restart sootypage-game-panel</pre>
+        </div>
+      </div>
+    </div>
+  </main>
 </div>
-<div class="card" style="max-width:920px">
-  <h3 style="margin-top:0">Binding</h3>
-  <div class="small">This panel binds to <b>HOST</b> and <b>PORT</b> from your <code>.env</code>.</div>
-  <pre class="log">HOST=0.0.0.0
-PORT=8080</pre>
-  <h3>Next upgrades</h3>
-  <ul class="small">
-    <li>File manager tab</li>
-    <li>Auto backups + download</li>
-    <li>uMod install + plugin manager</li>
-    <li>Multi-game support (Minecraft, etc.)</li>
-  </ul>
-</div>
+
+<script src="/app.js"></script>
 <script>
-navActive("settings");
-(async()=>{ await requireMe(); })();
+(async ()=>{
+  const me = await requireMe();
+  document.getElementById("meSub").textContent = `Logged in as ${me.username} (${me.role})`;
+  document.getElementById("url").textContent = `http://${location.hostname}:${location.port || 80}`;
+  try{
+    const h = await api("/health");
+    document.getElementById("health").textContent = h.ok ? "OK" : "Unknown";
+  }catch{
+    document.getElementById("health").textContent = "Error";
+  }
+})();
 </script>
-</div></div><script src="/app.js"></script>
-<script>document.getElementById("logout").onclick=()=>{clearToken();location.href="/login.html";};</script></body></html>
+</body>
+</html>

@@ -1,28 +1,45 @@
-<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<link rel="stylesheet" href="/ui.css"/><title>Login</title></head><body>
-<div class="main" style="max-width:920px;margin:0 auto;padding:28px">
-  <div class="card">
-    <div class="top"><h2 style="margin:0">Login</h2><div class="small">First time? Bootstrap creates the first <b>owner</b>.</div></div>
-    <div class="row">
-      <div style="flex:1" class="card">
-        <h3 style="margin-top:0">Sign in</h3>
-        <input id="u" placeholder="username"/>
-        <input id="p" type="password" placeholder="password"/>
-        <button class="btn" id="btn">Login</button>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sootypage Game Panel - Login</title>
+  <link rel="stylesheet" href="/ui.css">
+</head>
+<body>
+<div class="container" style="align-items:center; justify-content:center;">
+  <main class="main" style="max-width:520px; width:100%;">
+    <div class="card">
+      <div class="head">
+        <div class="brand" style="border:none; background:transparent; box-shadow:none; padding:0;">
+          <div class="logo">SG</div>
+          <div>
+            <div class="name">sootypage game panel</div>
+            <div class="sub">Sign in to manage your game servers</div>
+          </div>
+        </div>
       </div>
-      <div style="flex:1" class="card">
-        <h3 style="margin-top:0">Bootstrap owner (once)</h3>
-        <input id="bu" placeholder="owner username"/>
-        <input id="bp" type="password" placeholder="owner password"/>
-        <button class="btn secondary" id="bbtn">Create owner</button>
+      <div class="body">
+        <form id="loginForm">
+          <div class="form-grid">
+            <div class="col-12">
+              <div class="small">Username</div>
+              <input class="input" id="u" autocomplete="username" placeholder="username" required>
+            </div>
+            <div class="col-12">
+              <div class="small">Password</div>
+              <input class="input" id="p" type="password" autocomplete="current-password" placeholder="password" required>
+            </div>
+            <div class="col-12">
+              <button class="btn" id="btn" type="submit" style="width:100%;">Login</button>
+            </div>
+          </div>
+        </form>
+        <div class="small" id="out" style="margin-top:10px;"></div>
       </div>
     </div>
-    <pre id="out" class="log" style="margin-top:12px"></pre>
-  </div>
+  </main>
 </div>
-<script src="/app.js"></script>
-<script>
-btn.onclick=async()=>{out.textContent="";try{const r=await api("/auth/login",{method:"POST",body:JSON.stringify({username:u.value,password:p.value})});setToken(r.token);location.href="/dashboard.html";}catch(e){out.textContent="❌ "+e.message;}};
-bbtn.onclick=async()=>{out.textContent="";try{await api("/auth/bootstrap",{method:"POST",body:JSON.stringify({username:bu.value,password:bp.value})});out.textContent="✅ Owner created. Now login."; }catch(e){out.textContent="❌ "+e.message;}};
-</script>
-</body></html>
+<script src="/login.js"></script>
+</body>
+</html>

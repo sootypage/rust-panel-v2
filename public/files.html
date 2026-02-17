@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sootypage Game Panel — File Manager</title>
+  <link rel="stylesheet" href="/ui.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">sootypage game panel</div>
+    <nav class="nav">
+      <a class="navbtn" href="/dashboard.html">Servers</a>
+      <a class="navbtn" href="/create.html">Create Server</a>
+      <a class="navbtn" href="/files.html">File Manager</a>
+      <a class="navbtn" href="/users.html">Users</a>
+      <button class="navbtn primary" id="logoutBtn">Logout</button>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="card wide">
+      <div class="cardhead">
+        <h2>File Manager</h2>
+        <div class="muted" id="me"></div>
+      </div>
+      <div class="muted">Choose a server to open its files.</div>
+      <div id="list" class="list"></div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+  <script src="/files.js"></script>
+</body>
+</html>

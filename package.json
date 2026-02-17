@@ -1,11 +1,12 @@
 {
   "name": "rust-panel-next",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "private": true,
   "type": "commonjs",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "postinstall": "node scripts/postinstall.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

@@ -1,55 +1,107 @@
-# sootypage game panel
+# sootypage game panel (Rust-first)
 
-A clean restart that works: login, dashboard, create/install Rust servers, systemd management, metrics, RCON, live logs.
+A lightweight web panel (AMP/Crafty-inspired) for managing **Rust dedicated servers** on Ubuntu.
 
-## Install + Run
+- Web UI: login, dashboard, create server, server controls
+- Installs RustDedicated via **steamcmd** (app id 258550)
+- Optional **uMod/Oxide** install when creating a server ("Modded")
+- Uses **systemd** so servers can run 24/7 and restart on boot
+
+## Requirements
+
+- Ubuntu 20.04/22.04/24.04
+- Node.js **18+** (Node 20 recommended)
+- sudo access (NOPASSWD recommended for steamcmd + systemctl)
+
+## Install
+
 ```bash
+git clone https://github.com/sootypage/sootypage-game-panel.git
+cd sootypage-game-panel
+
+# create your env
 cp .env.example .env
+nano .env
+
 npm install
 node src/index.js
 ```
 
 Open:
-- `http://SERVER_IP:8080/login.html`
 
-## First user (OWNER)
-On first start, the panel will auto-create an **owner** user if the database is empty.
+- `http://YOUR_SERVER_IP:2323/` (or whatever `PORT` is set to)
 
-Set these in `.env` before starting:
-- `OWNER_USERNAME`
-- `OWNER_PASSWORD`
+The app binds to **0.0.0.0** by default.
 
-Then start the panel. You can create more users from the **Users** page.
+## Owner account
 
-## Required system setup
+On first start, the panel creates an **owner** user from `.env`:
 
-### Create `steam` user + rust root
+- `OWNER_USER`
+- `OWNER_PASS`
+
+After that, you can add more users from the Users page (owner/admin only).
+
+## Create server
+
+Create Server installs Rust to:
+
+- `${RUST_ROOT}/${slug}` (default `RUST_ROOT=/srv/rust`)
+
+It sets:
+
+- server (game) port
+- query port
+- rcon host/port/password
+- map size + seed
+- max players
+- optional uMod/Oxide install
+
+## systemd / 24/7
+
+Each server gets a unit:
+
+- `rust-<slug>.service`
+
+Servers can be started/stopped/restarted from the panel, and can be enabled to start on boot.
+
+## Troubleshooting
+
+### Buttons do nothing
+
+This panel uses a strict Content-Security-Policy (no inline scripts). Make sure you did not remove the `*.js` files in `public/`.
+
+### Login works via curl but not in browser
+
+All API routes are mounted under `/api`, so login is:
+
+- `POST /api/auth/login`
+
+### steamcmd / permissions
+
+If installs fail, verify steamcmd exists:
+
 ```bash
-sudo useradd -m -s /bin/bash steam 2>/dev/null || true
+command -v steamcmd || ls -lah /usr/games/steamcmd
+```
+
+If you want installs to work without typing a sudo password, add NOPASSWD rules for your user (use `visudo`).
+
+Example (replace `minecraftgod2122` with your Linux username):
+
+```text
+# allow steamcmd + steam user setup + systemd units without password
+minecraftgod2122 ALL=(root) NOPASSWD: /usr/bin/apt-get, /usr/bin/dpkg, /usr/bin/systemctl, /usr/bin/bash, /bin/mkdir, /bin/chown
+minecraftgod2122 ALL=(steam) NOPASSWD: /usr/games/steamcmd, /bin/chmod
+```
+
+Also ensure your Rust root exists and is writable by the installer:
+
+```bash
 sudo mkdir -p /srv/rust
 sudo chown -R steam:steam /srv/rust
-sudo chmod -R 2775 /srv/rust
 ```
 
-### Passwordless sudo (REQUIRED)
-The panel uses `sudo -n` for systemd + apt + journalctl.
+---
 
-Edit sudoers:
-```bash
-sudo visudo
-```
-
-Add (replace `YOURUSER`):
-```sudoers
-YOURUSER ALL=(root) NOPASSWD: /usr/bin/systemctl *, /usr/bin/apt-get *, /usr/bin/journalctl *
-YOURUSER ALL=(steam) NOPASSWD: /usr/games/steamcmd, /bin/chmod
-```
-
-## What you get now
-- ✅ Owner role (sees all servers)
-- ✅ Dashboard (cards) + per-server page
-- ✅ Create server (installs Rust via steamcmd)
-- ✅ systemd service per server (24/7 while enabled)
-- ✅ CPU/RAM graph per server
-- ✅ Live logs (journalctl streaming)
-- ✅ RCON console
+Made for **sootypage game panel**.

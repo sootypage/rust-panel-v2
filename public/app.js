@@ -4,6 +4,12 @@ const token=()=>localStorage.getItem("token");
 const setToken=(t)=>localStorage.setItem("token",t);
 const clearToken=()=>localStorage.removeItem("token");
 
+// Common UI helper used by pages
+function logout(){
+  clearToken();
+  location.href = "/login.html";
+}
+
 async function api(path,opts={}){
   const headers={"Content-Type":"application/json",...(opts.headers||{})};
   if(token()) headers.Authorization="Bearer "+token();
@@ -24,4 +30,9 @@ async function requireMe(){
     clearToken();
     location.href="/login.html";
   }
+}
+
+// Backwards-compatible helper name used by some pages
+async function requireLogin(){
+  return await requireMe();
 }
