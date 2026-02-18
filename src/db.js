@@ -28,10 +28,8 @@ CREATE TABLE IF NOT EXISTS servers (
   rcon_port INTEGER NOT NULL DEFAULT 28016,
   rcon_password TEXT NOT NULL DEFAULT '',
   ram_mb INTEGER NOT NULL DEFAULT 4096,
-  mc_software TEXT NOT NULL DEFAULT 'paper',
   mc_version TEXT,
   jar_name TEXT,
-  mc_motd TEXT,
   maxplayers INTEGER NOT NULL DEFAULT 50,
   worldsize INTEGER NOT NULL DEFAULT 3500,
   seed INTEGER NOT NULL DEFAULT 0,
@@ -68,12 +66,6 @@ try{
   }
   if(!hasColumn("servers","jar_name")){
     db.exec("ALTER TABLE servers ADD COLUMN jar_name TEXT");
-  }
-  if(!hasColumn("servers","mc_software")){
-    db.exec("ALTER TABLE servers ADD COLUMN mc_software TEXT NOT NULL DEFAULT 'paper'");
-  }
-  if(!hasColumn("servers","mc_motd")){
-    db.exec("ALTER TABLE servers ADD COLUMN mc_motd TEXT");
   }
 }catch{}
 

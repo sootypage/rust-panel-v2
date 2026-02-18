@@ -6,7 +6,7 @@ const pidusage = require("pidusage");
 
 const { db } = require("./db");
 const { sign, requireAuth, requireRole } = require("./auth");
-const { installRust, installUMod, installPaper, installFabric, installForge } = require("./installer");
+const { installRust, installUMod, installPaper } = require("./installer");
 const { createService, start, stop, restart, unitName, mainPid, SYSTEMD_MODE } = require("./systemd");
 const { sendRcon } = require("./rcon");
 const { createInstallStream, getInstallStream, appendLine, markDone } = require("./install_streams");
@@ -105,11 +105,6 @@ router.post("/servers", requireAuth, requireRole(["owner","admin"]), async (req,
 
     const base_dir = path.join(GAME_ROOT, slug);
     const import_code = (Math.random().toString(36).slice(2,8)).toUpperCase();
-    const mc_software = String(b.mc_software || "paper").toLowerCase();
-    if(game === "minecraft" && !["paper","fabric","forge"].includes(mc_software)){
-      return res.status(400).json({ok:false,error:"Invalid mc_software"});
-    }
-
     const row={
       slug,
       name: String(b.name||slug).trim(),
@@ -121,10 +116,8 @@ router.post("/servers", requireAuth, requireRole(["owner","admin"]), async (req,
       rcon_port: Number(b.rcon_port||28016),
       rcon_password: String(b.rcon_password||""),
       ram_mb: Number(b.ram_mb||4096),
-      mc_software,
       mc_version: b.mc_version ? String(b.mc_version) : null,
-      jar_name: b.jar_name ? String(b.jar_name) : (game==="minecraft"?"server.jar":null),
-      mc_motd: b.mc_motd ? String(b.mc_motd) : null,
+      jar_name: b.jar_name ? String(b.jar_name) : null,
       maxplayers: Number(b.maxplayers|| (game==="minecraft"?20:50)),
       worldsize: Number(b.worldsize||3500),
       seed: Number(b.seed||0),
@@ -134,11 +127,11 @@ router.post("/servers", requireAuth, requireRole(["owner","admin"]), async (req,
       import_code
     };
     db.prepare(`INSERT INTO servers
-      (slug,name,game,base_dir,server_port,query_port,rcon_host,rcon_port,rcon_password,ram_mb,mc_software,mc_version,jar_name,mc_motd,maxplayers,worldsize,seed,level,modded,owner_user_id,import_code)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      (slug,name,game,base_dir,server_port,query_port,rcon_host,rcon_port,rcon_password,ram_mb,mc_version,jar_name,maxplayers,worldsize,seed,level,modded,owner_user_id,import_code)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).run(
       row.slug,row.name,row.game,row.base_dir,row.server_port,row.query_port,row.rcon_host,row.rcon_port,row.rcon_password,
-      row.ram_mb,row.mc_software,row.mc_version,row.jar_name,row.mc_motd,row.maxplayers,row.worldsize,row.seed,row.level,row.modded,row.owner_user_id,row.import_code
+      row.ram_mb,row.mc_version,row.jar_name,row.maxplayers,row.worldsize,row.seed,row.level,row.modded,row.owner_user_id,row.import_code
     );
 
     // ensure creator can see server via membership table too
@@ -155,23 +148,15 @@ router.post("/servers", requireAuth, requireRole(["owner","admin"]), async (req,
         if(row.game === "rust"){
           await installRust({ baseDir: base_dir, modded: !!row.modded, onLine: (l)=>appendLine(installId, l) });
         } else {
-          const common = {
+          await installPaper({
             baseDir: base_dir,
             version: row.mc_version,
+            jarName: row.jar_name,
             ramMb: row.ram_mb,
             maxPlayers: row.maxplayers,
             port: row.server_port,
-            motd: row.mc_motd || "Sootypage Game Panel",
             onLine: (l)=>appendLine(installId, l)
-          };
-
-          if(row.mc_software === "fabric"){
-            await installFabric(common);
-          } else if (row.mc_software === "forge"){
-            await installForge(common);
-          } else {
-            await installPaper({ ...common, jarName: row.jar_name });
-          }
+          });
         }
         appendLine(installId, `[panel] Creating systemd service`);
         await createService(row, { onLine: (l)=>appendLine(installId, l) });

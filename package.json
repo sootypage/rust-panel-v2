@@ -6,7 +6,9 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "postinstall": "node scripts/postinstall.js"
+    "postinstall": "node scripts/postinstall.js",
+    "setup:deps": "bash scripts/setup-deps.sh",
+    "setup:sudoers": "bash scripts/setup-sudoers.sh"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

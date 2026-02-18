@@ -6,29 +6,12 @@ function q(id){ return document.getElementById(id); }
 function readPayload(){
   const game = (q("game")?.value || "rust").toLowerCase();
 
-  const base = {
+  return {
     game,
     slug: (q("slug")?.value || "").trim(),
     name: (q("name")?.value || "").trim(),
-  };
 
-  if(game === "minecraft"){
-    return {
-      ...base,
-      // backend expects these common fields
-      server_port: Number(q("mc_port")?.value || 25565),
-      ram_mb: Number(q("mc_ram_mb")?.value || 2048),
-      maxplayers: Number(q("mc_max_players")?.value || 20),
-
-      mc_software: (q("mc_software")?.value || "paper").toLowerCase(),
-      mc_version: (q("mc_version")?.value || "latest").trim(),
-      mc_motd: (q("mc_motd")?.value || "A Minecraft Server").trim(),
-    };
-  }
-
-  // Rust
-  return {
-    ...base,
+    // Rust fields
     server_port: Number(q("server_port")?.value || 28015),
     query_port: Number(q("query_port")?.value || 28017),
     rcon_host: (q("rcon_host")?.value || "127.0.0.1").trim(),
@@ -38,6 +21,13 @@ function readPayload(){
     worldsize: Number(q("worldsize")?.value || 3500),
     seed: Number(q("seed")?.value || 0),
     modded: !!q("modded")?.checked,
+
+    // Minecraft fields (Paper)
+    mc_version: (q("mc_version")?.value || "latest").trim(),
+    mc_port: Number(q("mc_port")?.value || 25565),
+    mc_ram_mb: Number(q("mc_ram_mb")?.value || 2048),
+    mc_max_players: Number(q("mc_max_players")?.value || 20),
+    mc_motd: (q("mc_motd")?.value || "A Minecraft Server").trim(),
   };
 }
 
@@ -56,50 +46,50 @@ function setProgress(pct){
 }
 
 async function startInstallStream(streamId, slug){
-  // Server-sent events: /api/install/:id
+  // Server-sent events: /api/install/stream/:id
   setConsole(`[panel] Watching install stream: ${streamId}`);
   setProgress(1);
 
   return new Promise((resolve, reject)=>{
-    const es = new EventSource(`/api/install/${encodeURIComponent(streamId)}`);
+    const es = new EventSource(`/api/install/stream/${encodeURIComponent(streamId)}`);
 
-    es.addEventListener("line", (ev)=>{
+    es.onmessage = (ev)=>{
       try{
         const msg = JSON.parse(ev.data);
-        const line = msg?.line ?? "";
-        setConsole(line);
-        const m = String(line).match(/progress:\s*([0-9]+\.?[0-9]*)/i);
-        if(m){
-          const v = Number(m[1]);
-          if(!Number.isNaN(v)) setProgress(Math.max(1, Math.min(99, v)));
+        if(msg.type === "line"){
+          setConsole(msg.line);
+          // crude progress: try to parse SteamCMD progress if present
+          const m = msg.line.match(/progress:\s*([0-9]+\.[0-9]+)|progress:\s*([0-9]+)/i);
+          if(m){
+            const v = Number(m[1] || m[2]);
+            if(!Number.isNaN(v)) setProgress(Math.max(1, Math.min(99, v)));
+          }
         }
-      }catch{}
-    });
-
-    es.addEventListener("done", (ev)=>{
-      try{
-        const msg = JSON.parse(ev.data);
-        if(msg?.ok){
+        if(msg.type === "done"){
           setProgress(100);
           setConsole("✅ Install finished");
           es.close();
           resolve();
-          location.href = `/server.html?slug=${encodeURIComponent(slug)}`;
-        } else {
+        }
+        if(msg.type === "error"){
+          setConsole(`❌ ${msg.error || "Install failed"}`);
           es.close();
-          reject(new Error(msg?.error || "Install failed"));
+          reject(new Error(msg.error || "Install failed"));
         }
       }catch{
-        es.close();
-        resolve();
+        // fall back to raw
+        setConsole(String(ev.data || ""));
       }
-    });
+    };
 
     es.onerror = ()=>{
       setConsole("[error] Lost connection to install stream");
       es.close();
       reject(new Error("install stream disconnected"));
     };
+
+    // When done, auto-redirect to the server page
+    resolve().then(()=>{ location.href = `/server.html?slug=${encodeURIComponent(slug)}`; });
   });
 }
 
@@ -124,8 +114,14 @@ async function createServer(e){
 
     // app.js api() prefixes /api automatically
     const r = await api("/servers", { method: "POST", body: JSON.stringify(payload) });
-    setConsole(`✅ Created. Starting install stream: ${r.installId}`);
-    await startInstallStream(r.installId, payload.slug);
+
+    if(r.stream){
+      setConsole(`✅ Created. Starting install stream: ${r.stream}`);
+      await startInstallStream(r.stream, payload.slug);
+    }else{
+      setConsole("✅ Created");
+      location.href = `/server.html?slug=${encodeURIComponent(payload.slug)}`;
+    }
   }catch(err){
     const msg = err?.message || String(err);
     if(out) out.textContent = "❌ " + msg;

@@ -105,3 +105,23 @@ sudo chown -R steam:steam /srv/rust
 ---
 
 Made for **sootypage game panel**.
+
+
+## First-time setup (required)
+
+Run these once so the panel can install servers and manage systemd without asking for a sudo password:
+
+```bash
+sudo ./scripts/setup-deps.sh
+sudo ./scripts/setup-sudoers.sh
+```
+
+Then start the panel:
+
+```bash
+cp .env.example .env
+npm install
+npm start
+```
+
+Open: `http://YOUR_IP:8080` (or set `PORT` in `.env`).

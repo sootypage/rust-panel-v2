@@ -26,7 +26,7 @@ async function tryEnableLinger({ onLine } = {}){
   const user = process.env.USER || "";
   if(!user) return;
   try{
-    await run("sudo", ["-n", "/usr/bin/loginctl", "enable-linger", user], { onLine });
+    await run("sudo", ["-n", "loginctl", "enable-linger", user], { onLine });
     onLine?.(`[systemd] Enabled linger for ${user}`);
   }catch{
     onLine?.(`[systemd] NOTE: couldn't enable linger (no sudo). For 24/7 servers run:`);
@@ -37,7 +37,7 @@ async function tryEnableLinger({ onLine } = {}){
 async function systemctl(args, { onLine } = {}){
   if (SYSTEMD_MODE === "root"){
     // Requires sudoers NOPASSWD for systemctl + cat to /etc/systemd/system.
-    return run("sudo", ["-n", "/usr/bin/systemctl", ...args], { onLine });
+    return run("sudo", ["-n", "systemctl", ...args], { onLine });
   }
   // user mode
   return run("systemctl", ["--user", ...args], { onLine });
@@ -47,26 +47,26 @@ async function daemonReload({ onLine } = {}){
   await systemctl(["daemon-reload"], { onLine });
 }
 
-function makeStartScript(serverRow){
-  const { slug, game, base_dir, server_port, query_port, rcon_host, rcon_port, rcon_password, worldsize, seed, maxplayers } = serverRow;
+function makeStartScript({ slug, game, base_dir, server_port, query_port, rcon_host, rcon_port, rcon_password, worldsize, seed, maxplayers, modded }){
   const safe = (s)=>String(s).replace(/"/g,'\\"');
 
   if (game === "minecraft"){
-    // Prefer a server-provided start script (Paper/Fabric/Forge). Fall back to a jar.
-    const ramMb = Number(serverRow.ram_mb || 0) || 2048;
-    const preferJar = String(serverRow.jar_name || "server.jar");
-    return `#!/usr/bin/env bash\nset -euo pipefail\ncd "${safe(base_dir)}"\nRAM=${ramMb}\nif [ -f ./start.sh ]; then\n  chmod +x ./start.sh || true\n  exec ./start.sh\nfi\nif [ -f ./run.sh ]; then\n  chmod +x ./run.sh || true\n  exec ./run.sh\nfi\nJAR="${safe(preferJar)}"\nif [ ! -f "$JAR" ]; then\n  JAR=$(ls -1 *.jar 2>/dev/null | head -n 1 || true)\nfi\nif [ -z "$JAR" ] || [ ! -f "$JAR" ]; then\n  echo "[minecraft] No jar found in ${safe(base_dir)}" >&2\n  exit 1\nfi\nexec java -Xms${ramMb}M -Xmx${ramMb}M -jar "$JAR" nogui\n`;
+    // Paper uses Java; memory is handled by the create form via JAVA_XMS/JAVA_XMX in the script.
+    const jar = path.join(base_dir, "paper.jar");
+    const xms = process.env.MC_JAVA_XMS || "1G";
+    const xmx = process.env.MC_JAVA_XMX || "2G";
+    return `#!/usr/bin/env bash\nset -euo pipefail\ncd "${safe(base_dir)}"\nexec java -Xms${safe(xms)} -Xmx${safe(xmx)} -jar "${safe(jar)}" nogui\n`;
   }
 
   // Rust
   // Keep quotes for Procedural Map.
-  return `#!/usr/bin/env bash\nset -euo pipefail\ncd "${safe(base_dir)}"\nexec ./RustDedicated -batchmode -nographics \\\n  +server.identity "${safe(slug)}" \\\n  +server.port ${Number(server_port)||28015} \\\n  +server.queryport ${Number(query_port)||28017} \\\n  +server.level "Procedural Map" \\\n  +server.seed ${Number(seed)||0} \\\n  +server.worldsize ${Number(worldsize)||3500} \\\n  +server.maxplayers ${Number(maxplayers)||50} \\\n  +rcon.web 1 \\\n  +rcon.ip "${safe(rcon_host||'127.0.0.1')}" \\\n  +rcon.port ${Number(rcon_port)||28016} \\\n  +rcon.password "${safe(rcon_password||'')}" \\\n  +server.hostname "${safe(slug)}" \\\n  +server.description "Hosted with Sootypage Game Panel"\n`;
+  return `#!/usr/bin/env bash\nset -euo pipefail\ncd "${safe(base_dir)}"\nexec ./RustDedicated -batchmode -nographics \\n+  +server.identity "${safe(slug)}" \\n+  +server.port ${Number(server_port)||28015} \\n+  +server.queryport ${Number(query_port)||28017} \\n+  +server.level "Procedural Map" \\n+  +server.seed ${Number(seed)||0} \\n+  +server.worldsize ${Number(worldsize)||3500} \\n+  +server.maxplayers ${Number(maxplayers)||50} \\n+  +rcon.web 1 \\n+  +rcon.ip "${safe(rcon_host||'127.0.0.1')}" \\n+  +rcon.port ${Number(rcon_port)||28016} \\n+  +rcon.password "${safe(rcon_password||'')}" \\n+  +server.hostname "${safe(slug)}" \\n+  +server.description "Hosted with Sootypage Game Panel"\n`;
 }
 
 async function writeFileAsRoot(destPath, content, { onLine } = {}){
   // Write with sudo, using a heredoc. This avoids shell escaping issues.
   const cmd = `cat > '${destPath}' <<'UNIT'\n${content}\nUNIT`;
-  await run("sudo", ["-n","/usr/bin/bash","-lc", cmd], { onLine });
+  await run("sudo", ["-n","bash","-lc", cmd], { onLine });
 }
 
 async function createService(serverRow, { onLine } = {}){
@@ -126,9 +126,7 @@ async function mainPid(slug){
   try{
     const out = await run(
       SYSTEMD_MODE === "root" ? "sudo" : "systemctl",
-      SYSTEMD_MODE === "root"
-        ? ["-n", "/usr/bin/systemctl", "show", "-p", "MainPID", "--value", unitName(slug)]
-        : ["--user", "show", "-p", "MainPID", "--value", unitName(slug)],
+      SYSTEMD_MODE === "root" ? ["-n", "systemctl", "show", "-p", "MainPID", "--value", unitName(slug)] : ["--user", "show", "-p", "MainPID", "--value", unitName(slug)],
       { capture: true }
     );
     const pid = Number(String(out).trim() || 0);

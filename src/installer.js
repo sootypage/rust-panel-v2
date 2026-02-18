@@ -178,7 +178,7 @@ async function installRust({ baseDir, onLine } = {}) {
   onLine?.("[installer] Rust Dedicated installed OK");
 }
 
-async function installPaper({ baseDir, version, jarName, ramMb, maxPlayers, port, motd, onLine } = {}) {
+async function installPaper({ baseDir, version, jarName, ramMb, maxPlayers, port, onLine } = {}) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
   fs.mkdirSync(INSTALL_LOG_DIR, { recursive: true });
@@ -196,9 +196,7 @@ async function installPaper({ baseDir, version, jarName, ramMb, maxPlayers, port
   const jar = jarName || buildMeta.downloads?.application?.name || `paper-${chosenVersion}.jar`;
   const url = `https://api.papermc.io/v2/projects/${project}/versions/${chosenVersion}/builds/${build}/downloads/${jar}`;
 
-  // Normalize to server.jar so systemd/start scripts can be generic.
-  const targetJar = jarName || "server.jar";
-  const jarPath = path.join(baseDir, targetJar);
+  const jarPath = path.join(baseDir, jar);
   await download(url, jarPath, onLine);
 
   // Basic config
@@ -207,116 +205,15 @@ async function installPaper({ baseDir, version, jarName, ramMb, maxPlayers, port
     `server-port=${Number(port||25565)}`,
     `max-players=${Number(maxPlayers||20)}`,
     "enable-rcon=false",
-    `motd=${String(motd||"Sootypage Game Panel").replace(/\n/g," ")}`,
+    "motd=Sootypage Game Panel",
   ].join("\n") + "\n";
   fs.writeFileSync(path.join(baseDir, "server.properties"), props);
 
-  const startSh = `#!/usr/bin/env bash\nset -e\ncd \"$(dirname \"$0\")\"\nRAM=${Number(ramMb||4096)}\njava -Xms${Number(ramMb||4096)}M -Xmx${Number(ramMb||4096)}M -jar \"${targetJar}\" nogui\n`;
+  const startSh = `#!/usr/bin/env bash\nset -e\ncd \"$(dirname \"$0\")\"\nRAM=${Number(ramMb||4096)}\njava -Xms${Number(ramMb||4096)}M -Xmx${Number(ramMb||4096)}M -jar \"${jar}\" nogui\n`;
   fs.writeFileSync(path.join(baseDir, "start.sh"), startSh);
   try{ fs.chmodSync(path.join(baseDir,"start.sh"), 0o755); }catch{}
 
   onLine?.(`[installer] Paper installed OK (${chosenVersion} build ${build})`);
-}
-
-// ---- Fabric (vanilla + mods via Fabric Loader)
-async function installFabric({ baseDir, version, loaderVersion, installerVersion, ramMb, maxPlayers, port, motd, onLine } = {}){
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
-  fs.mkdirSync(INSTALL_LOG_DIR, { recursive: true });
-
-  ensureDirWritable(baseDir, onLine);
-
-  // Pick latest stable versions when not provided.
-  const mcVer = (version && version !== "latest") ? String(version) : null;
-  if(!mcVer){
-    // Use official launcher manifest to pick the latest release.
-    const manifest = await httpsGetJson("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json");
-    const latest = manifest?.latest?.release;
-    if(!latest) throw new Error("Could not determine latest Minecraft version");
-    version = latest;
-  }
-
-  const loaderMeta = await httpsGetJson("https://meta.fabricmc.net/v2/versions/loader");
-  const latestLoader = loaderMeta?.[0]?.version;
-  const loader = loaderVersion || latestLoader;
-  if(!loader) throw new Error("Could not determine Fabric loader version");
-
-  const installerMeta = await httpsGetJson("https://meta.fabricmc.net/v2/versions/installer");
-  const latestInstaller = installerMeta?.[0]?.version;
-  const installer = installerVersion || latestInstaller;
-  if(!installer) throw new Error("Could not determine Fabric installer version");
-
-  const url = `https://meta.fabricmc.net/v2/versions/loader/${encodeURIComponent(version)}/${encodeURIComponent(loader)}/${encodeURIComponent(installer)}/server/jar`;
-  const targetJar = "server.jar";
-  const jarPath = path.join(baseDir, targetJar);
-  await download(url, jarPath, onLine);
-
-  fs.writeFileSync(path.join(baseDir, "eula.txt"), "eula=true\n");
-  const props = [
-    `server-port=${Number(port||25565)}`,
-    `max-players=${Number(maxPlayers||20)}`,
-    "enable-rcon=false",
-    `motd=${String(motd||"Sootypage Game Panel").replace(/\n/g," ")}`,
-  ].join("\n") + "\n";
-  fs.writeFileSync(path.join(baseDir, "server.properties"), props);
-
-  const startSh = `#!/usr/bin/env bash\nset -e\ncd \"$(dirname \"$0\")\"\nRAM=${Number(ramMb||4096)}\njava -Xms${Number(ramMb||4096)}M -Xmx${Number(ramMb||4096)}M -jar \"${targetJar}\" nogui\n`;
-  fs.writeFileSync(path.join(baseDir, "start.sh"), startSh);
-  try{ fs.chmodSync(path.join(baseDir,"start.sh"), 0o755); }catch{}
-
-  onLine?.(`[installer] Fabric installed OK (MC ${version}, loader ${loader}, installer ${installer})`);
-}
-
-// ---- Forge (modded)
-async function installForge({ baseDir, version, forgeVersion, ramMb, maxPlayers, port, motd, onLine } = {}){
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
-  fs.mkdirSync(INSTALL_LOG_DIR, { recursive: true });
-
-  ensureDirWritable(baseDir, onLine);
-
-  // Determine MC version (latest release if not provided)
-  if(!version || version === "latest"){
-    const manifest = await httpsGetJson("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json");
-    const latest = manifest?.latest?.release;
-    if(!latest) throw new Error("Could not determine latest Minecraft version");
-    version = latest;
-  }
-
-  // Determine Forge build for that MC version
-  let forge = forgeVersion;
-  if(!forge){
-    // Forge promotions JSON maps MC version -> recommended/latest Forge build numbers
-    const promos = await httpsGetJson("https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json");
-    forge = promos?.promos?.[`${version}-recommended`] || promos?.promos?.[`${version}-latest`];
-  }
-  if(!forge) throw new Error(`Could not determine Forge version for MC ${version}`);
-
-  const artifactVersion = `${version}-${forge}`;
-  const installerJar = `forge-${artifactVersion}-installer.jar`;
-  const url = `https://maven.minecraftforge.net/net/minecraftforge/forge/${artifactVersion}/${installerJar}`;
-  const installerPath = path.join(baseDir, installerJar);
-  await download(url, installerPath, onLine);
-
-  fs.writeFileSync(path.join(baseDir, "eula.txt"), "eula=true\n");
-  const props = [
-    `server-port=${Number(port||25565)}`,
-    `max-players=${Number(maxPlayers||20)}`,
-    "enable-rcon=false",
-    `motd=${String(motd||"Sootypage Game Panel").replace(/\n/g," ")}`,
-  ].join("\n") + "\n";
-  fs.writeFileSync(path.join(baseDir, "server.properties"), props);
-
-  // Run the Forge installer to generate libraries + run scripts.
-  onLine?.(`[installer] Running Forge installer (${artifactVersion})...`);
-  await run("java", ["-jar", installerPath, "--installServer"], { onLine, cwd: baseDir });
-
-  // Create a generic start.sh that prefers Forge's run.sh if present.
-  const startSh = `#!/usr/bin/env bash\nset -e\ncd \"$(dirname \"$0\")\"\nRAM=${Number(ramMb||4096)}\nif [ -f ./run.sh ]; then\n  chmod +x ./run.sh || true\n  exec ./run.sh nogui\nfi\n# Fallback: try to run the generated forge server jar\nJAR=$(ls -1 forge-*.jar 2>/dev/null | head -n 1 || true)\nif [ -z \"$JAR\" ]; then\n  echo \"[forge] Could not find forge server jar\" >&2\n  exit 1\nfi\nexec java -Xms${Number(ramMb||4096)}M -Xmx${Number(ramMb||4096)}M -jar \"$JAR\" nogui\n`;
-  fs.writeFileSync(path.join(baseDir, "start.sh"), startSh);
-  try{ fs.chmodSync(path.join(baseDir,"start.sh"), 0o755); }catch{}
-
-  onLine?.(`[installer] Forge installed OK (MC ${version}, Forge ${forge})`);
 }
 
 async function installUMod({ baseDir, onLine } = {}) {
@@ -332,4 +229,4 @@ async function installUMod({ baseDir, onLine } = {}) {
   onLine?.("[installer] uMod installed OK");
 }
 
-module.exports = { INSTALL_LOG_DIR, installRust, installUMod, installPaper, installFabric, installForge };
+module.exports = { INSTALL_LOG_DIR, installRust, installUMod, installPaper };
